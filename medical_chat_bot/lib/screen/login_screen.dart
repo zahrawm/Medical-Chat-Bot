@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:medical_chat_bot/provider/auth_provider.dart';
-import 'package:medical_chat_bot/screen/signup_screen.dart';
+
 import 'package:medical_chat_bot/widgets/button.dart';
 import 'package:medical_chat_bot/widgets/custom_text_field.dart';
 import 'package:provider/provider.dart';
@@ -20,13 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.login(_emailController.text, _passwordController.text);
-    }
   }
 
   @override
@@ -59,11 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: isTablet ? 100 : 80,
-                          color: Colors.blue,
-                        ),
                         SizedBox(height: isTablet ? 48 : 32),
                         Text(
                           'Welcome Back',
@@ -93,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           labelText: 'Password',
                           prefixIcon: Icons.lock,
-                          obscureText: true,
+                          obscureText: false,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
@@ -115,21 +103,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        if (authProvider.errorMessage.isNotEmpty)
-                          SizedBox(height: 16),
+
+                        SizedBox(height: 16),
 
                         MyButton(
                           text: 'Login',
                           color: Theme.of(context).primaryColor,
                           onPressed: () {
-                            Navigator.pushNamed(context, '/login');
+                            Navigator.pushNamed(context, '/chat');
                           },
                         ),
                         SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
                             authProvider.clearError();
-                            Navigator.pushNamed(context, '/signup');
+                            Navigator.pushNamed(context, '/chat');
                           },
                           child: Text(
                             "Don't have an account? Sign Up",

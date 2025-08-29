@@ -5,6 +5,7 @@ import 'package:medical_chat_bot/provider/chat_provider.dart';
 import 'package:medical_chat_bot/screen/chat_screen.dart';
 import 'package:medical_chat_bot/screen/login_screen.dart';
 import 'package:medical_chat_bot/screen/signup_screen.dart';
+
 import 'package:provider/provider.dart';
 
 void main() {
