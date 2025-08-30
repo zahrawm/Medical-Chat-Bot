@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:medical_chat_bot/provider/auth_provider.dart';
-import 'package:medical_chat_bot/provider/chat_provider.dart';
-import 'package:medical_chat_bot/screen/chat_screen.dart';
-import 'package:medical_chat_bot/screen/login_screen.dart';
-import 'package:medical_chat_bot/screen/signup_screen.dart';
+import 'package:medical_chat_bot/provider/auth_provider.dart' show AuthProvider;
+import 'package:medical_chat_bot/service/auth_wrapper.dart';
 
 import 'package:provider/provider.dart';
 
@@ -18,22 +14,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
+        title: 'IRIS Chat',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          textTheme: GoogleFonts.ralewayTextTheme(),
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        initialRoute: '/',
-        routes: {
-          '/': (_) => LoginScreen(),
-          '/signup': (_) => SignUpScreen(),
-          '/chat': (_) => ChatScreen(),
-        },
+        home: AuthWrapper(),
       ),
     );
   }

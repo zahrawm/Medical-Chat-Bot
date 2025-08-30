@@ -1,80 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:medical_chat_bot/provider/chat_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:medical_chat_bot/model/chat_model.dart';
 
-class MessageInput extends StatefulWidget {
-  @override
-  _MessageInputState createState() => _MessageInputState();
-}
+class MessageBubble extends StatelessWidget {
+  final Message message;
 
-class _MessageInputState extends State<MessageInput> {
-  final TextEditingController _controller = TextEditingController();
-
-  void _sendMessage() {
-    final text = _controller.text.trim();
-    if (text.isNotEmpty) {
-      context.read<ChatProvider>().sendMessage(text);
-      _controller.clear();
-    }
-  }
+  MessageBubble({required this.message});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(0, -1),
-            blurRadius: 4,
-            color: Colors.black12,
-          ),
-        ],
-      ),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+          if (!message.isUser) ...[
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blue.shade100,
+              child: Text(
+                'I',
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              onSubmitted: (_) => _sendMessage(),
-              maxLines: null,
+            ),
+            SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: message.isUser
+                    ? Colors.blue.shade600
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(18).copyWith(
+                  bottomRight: message.isUser ? Radius.circular(4) : null,
+                  bottomLeft: !message.isUser ? Radius.circular(4) : null,
+                ),
+              ),
+              child: Text(
+                message.content,
+                style: TextStyle(
+                  color: message.isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
-          SizedBox(width: 8),
-          Consumer<ChatProvider>(
-            builder: (context, chatProvider, child) {
-              return FloatingActionButton(
-                onPressed: chatProvider.isTyping ? null : _sendMessage,
-                mini: true,
-                backgroundColor: chatProvider.isTyping
-                    ? Colors.grey
-                    : Colors.blue,
-                child: Icon(
-                  chatProvider.isTyping ? Icons.hourglass_empty : Icons.send,
-                  color: Colors.white,
+          if (message.isUser) ...[
+            SizedBox(width: 8),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.green.shade100,
+              child: Text(
+                'U',
+                style: TextStyle(
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }

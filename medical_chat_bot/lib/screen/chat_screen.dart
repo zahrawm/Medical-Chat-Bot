@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:medical_chat_bot/provider/auth_provider.dart';
 import 'package:medical_chat_bot/provider/chat_provider.dart';
-import 'package:medical_chat_bot/widgets/chat_message.dart';
 import 'package:medical_chat_bot/widgets/message_input.dart';
-import 'package:medical_chat_bot/widgets/typying_indicator.dart';
 import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -11,110 +10,176 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final ScrollController _scrollController = ScrollController();
-
-  void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0.0,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
+  final _messageController = TextEditingController();
+  final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("IRIS Chat"),
-        backgroundColor: Colors.blue,
-        elevation: 1,
+        title: Text('IRIS Chat'),
+        backgroundColor: Colors.blue.shade600,
+        foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.clear_all),
-            onPressed: () {
-              context.read<ChatProvider>().clearMessages();
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'clear') {
+                Provider.of<ChatProvider>(context, listen: false).clearChat();
+              } else if (value == 'logout') {
+                Provider.of<AuthProvider>(context, listen: false).logout();
+              }
             },
-            tooltip: 'Clear Chat',
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    Icon(Icons.clear_all, color: Colors.grey.shade600),
+                    SizedBox(width: 8),
+                    Text('Clear Chat'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.grey.shade600),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      backgroundColor: Colors.grey[100],
-      body: Consumer<ChatProvider>(
-        builder: (context, chatProvider, child) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollToBottom();
-          });
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<ChatProvider>(
+              builder: (context, chatProvider, child) {
+                if (chatProvider.messages.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Start a conversation with IRIS',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Ask me anything!',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-          return Column(
-            children: [
-              
-              if (chatProvider.errorMessage != null)
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(8),
-                  color: Colors.red[100],
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          chatProvider.errorMessage!,
-                          style: TextStyle(color: Colors.red[800]),
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.all(16),
+                  itemCount: chatProvider?.messages.length,
+                  itemBuilder: (context, index) {
+                    final message = chatProvider.messages[index];
+                    return MessageBubble(message: message);
+                  },
+                );
+              },
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  offset: Offset(0, -2),
+                  blurRadius: 4,
+                  color: Colors.black.withOpacity(0.1),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.all(16),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: Colors.red),
-                        onPressed: () {
-                          chatProvider.clearError();
-                        },
-                      ),
-                    ],
+                      maxLines: null,
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
                   ),
-                ),
-              
-              
-              Flexible(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.all(16.0),
-                  reverse: true,
-                  itemBuilder: (_, int index) {
-                    if (index == 0 && chatProvider.isTyping) {
-                      return Column(
-                        children: [
-                          TypingIndicator(),
-                          if (chatProvider.messages.isNotEmpty)
-                            ChatMessageWidget(message: chatProvider.messages[0]),
-                        ],
+                  SizedBox(width: 12),
+                  Consumer<ChatProvider>(
+                    builder: (context, chatProvider, child) {
+                      return FloatingActionButton(
+                        onPressed: chatProvider.isLoading ? null : _sendMessage,
+                        backgroundColor: Colors.blue.shade600,
+                        child: chatProvider.isLoading
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(Icons.send, color: Colors.white),
+                        mini: true,
                       );
-                    }
-                    int messageIndex = chatProvider.isTyping ? index - 1 : index;
-                    if (messageIndex < 0 || messageIndex >= chatProvider.messages.length) {
-                      return SizedBox.shrink();
-                    }
-                    return ChatMessageWidget(message: chatProvider.messages[messageIndex]);
-                  },
-                  itemCount: chatProvider.messages.length + (chatProvider.isTyping ? 1 : 0),
-                ),
+                    },
+                  ),
+                ],
               ),
-              
-              
-              MessageInput(),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  void _sendMessage() {
+    final message = _messageController.text.trim();
+    if (message.isEmpty) return;
+
+    _messageController.clear();
+    Provider.of<ChatProvider>(context, listen: false).sendMessage(message);
+
+    // Scroll to bottom
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 }

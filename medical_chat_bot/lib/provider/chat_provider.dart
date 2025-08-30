@@ -2,77 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:medical_chat_bot/model/chat_model.dart';
 import 'package:medical_chat_bot/service/api_service.dart';
 
-
-
-class ChatProvider extends ChangeNotifier {
-  final List<ChatMessage> _messages = [];
-  bool _isTyping = false;
+class ChatProvider with ChangeNotifier {
+  final ApiService _apiService;
   String? _currentThreadId;
-  String? _errorMessage;
+  List<Message> _messages = [];
+  bool _isLoading = false;
+  String? _error;
 
-  List<ChatMessage> get messages => List.unmodifiable(_messages);
-  bool get isTyping => _isTyping;
-  String? get errorMessage => _errorMessage;
-  String? get currentThreadId => _currentThreadId;
+  ChatProvider(this._apiService);
 
-  void sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+  List<Message> get messages => _messages;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-    _errorMessage = null;
-    
-    final userMessage = ChatMessage(
-      text: text,
-      isBot: false,
-    );
-
-    _messages.insert(0, userMessage);
-    _isTyping = true;
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
+  }
 
+  void _setError(String? error) {
+    _error = error;
+    notifyListeners();
+  }
+
+  Future<void> sendMessage(String message) async {
     try {
-      Map<String, dynamic> response;
+      _setLoading(true);
+      _setError(null);
+
       
+      _messages.add(Message(
+        content: message,
+        isUser: true,
+        timestamp: DateTime.now(),
+      ));
+      notifyListeners();
+
+      Map<String, dynamic> response;
+
       if (_currentThreadId == null) {
-        
-        response = await ApiService.startConversation(text);
+        response = await _apiService.startConversation(message);
         _currentThreadId = response['thread_id'];
       } else {
-       
-        response = await ApiService.continueConversation(_currentThreadId!, text);
+        response = await _apiService.continueConversation(_currentThreadId!, message);
       }
 
-    
-      String botResponseText = response['response'] ?? response['message'] ?? 'No response received';
-      
-      _addBotMessage(botResponseText);
-      
+      _messages.add(Message(
+        content: response['response'] ?? response['message'] ?? 'No response',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
     } catch (e) {
-      _errorMessage = 'Failed to send message: ${e.toString()}';
-      _addBotMessage('Sorry, I encountered an error. Please try again.');
+      _setError(e.toString());
+      _messages.add(Message(
+        content: 'Error: ${e.toString()}',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+    } finally {
+      _setLoading(false);
     }
   }
 
-  void _addBotMessage(String text) {
-    final botMessage = ChatMessage(
-      text: text,
-      isBot: true,
-    );
-
-    _messages.insert(0, botMessage);
-    _isTyping = false;
-    notifyListeners();
-  }
-
-  void clearMessages() {
+  void clearChat() {
     _messages.clear();
-    _isTyping = false;
     _currentThreadId = null;
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  void clearError() {
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
 }
