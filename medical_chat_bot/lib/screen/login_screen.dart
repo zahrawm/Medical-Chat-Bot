@@ -10,13 +10,15 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLoginMode = true;
   final _formKey = GlobalKey<FormState>();
-  
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _dobController = TextEditingController();
+  final _dayController = TextEditingController();
+  final _monthController = TextEditingController();
+  final _yearController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade700],
+            colors: [Colors.green, Colors.green.shade50],
           ),
         ),
         child: SafeArea(
@@ -45,14 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'IRIS',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
+                        Image.asset('assets/logo.png', height: 60, width: 60),
                         SizedBox(height: 8),
                         Text(
                           _isLoginMode ? 'Welcome back' : 'Create account',
@@ -62,7 +57,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ),
                         SizedBox(height: 32),
-                        
+
                         if (!_isLoginMode) ...[
                           TextFormField(
                             controller: _usernameController,
@@ -81,7 +76,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             },
                           ),
                           SizedBox(height: 16),
-                          
+
                           Row(
                             children: [
                               Expanded(
@@ -122,26 +117,108 @@ class _AuthScreenState extends State<AuthScreen> {
                             ],
                           ),
                           SizedBox(height: 16),
-                          
-                          TextFormField(
-                            controller: _dobController,
-                            decoration: InputDecoration(
-                              labelText: 'Date of Birth (YYYY-MM-DD)',
-                              prefixIcon: Icon(Icons.calendar_today),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Date of Birth',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade700,
+                                ),
                               ),
-                            ),
-                            validator: (value) {
-                              if (value?.isEmpty ?? true) {
-                                return 'Please enter date of birth';
-                              }
-                              return null;
-                            },
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _dayController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Day',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value?.isEmpty ?? true) {
+                                          return 'Day required';
+                                        }
+                                        final day = int.tryParse(value!);
+                                        if (day == null ||
+                                            day < 1 ||
+                                            day > 31) {
+                                          return 'Invalid day';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _monthController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Month',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value?.isEmpty ?? true) {
+                                          return 'Month required';
+                                        }
+                                        final month = int.tryParse(value!);
+                                        if (month == null ||
+                                            month < 1 ||
+                                            month > 12) {
+                                          return 'Invalid month';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _yearController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Year',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value?.isEmpty ?? true) {
+                                          return 'Year required';
+                                        }
+                                        final year = int.tryParse(value!);
+                                        if (year == null ||
+                                            year < 1900 ||
+                                            year > DateTime.now().year) {
+                                          return 'Invalid year';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           SizedBox(height: 16),
                         ],
-                        
+
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
@@ -162,7 +239,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           },
                         ),
                         SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _passwordController,
                           obscureText: true,
@@ -181,7 +258,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           },
                         ),
                         SizedBox(height: 24),
-                        
+
                         Consumer<AuthProvider>(
                           builder: (context, authProvider, child) {
                             if (authProvider.error != null) {
@@ -192,11 +269,15 @@ class _AuthScreenState extends State<AuthScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.red.shade50,
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.red.shade200),
+                                      border: Border.all(
+                                        color: Colors.red.shade200,
+                                      ),
                                     ),
                                     child: Text(
                                       authProvider.error!,
-                                      style: TextStyle(color: Colors.red.shade700),
+                                      style: TextStyle(
+                                        color: Colors.red.shade700,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(height: 16),
@@ -206,32 +287,39 @@ class _AuthScreenState extends State<AuthScreen> {
                             return SizedBox.shrink();
                           },
                         ),
-                        
+
                         Consumer<AuthProvider>(
                           builder: (context, authProvider, child) {
                             return SizedBox(
                               width: double.infinity,
                               height: 48,
                               child: ElevatedButton(
-                                onPressed: authProvider.isLoading ? null : _submitForm,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : _submitForm,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue.shade600,
+                                  backgroundColor: Colors.green,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                                 child: authProvider.isLoading
-                                    ? CircularProgressIndicator(color: Colors.white)
+                                    ? CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
                                     : Text(
                                         _isLoginMode ? 'Login' : 'Register',
-                                        style: TextStyle(fontSize: 16, color: Colors.white),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
                                       ),
                               ),
                             );
                           },
                         ),
                         SizedBox(height: 16),
-                        
+
                         TextButton(
                           onPressed: () {
                             setState(() {
@@ -267,10 +355,8 @@ class _AuthScreenState extends State<AuthScreen> {
         _emailController.text.trim(),
         _passwordController.text,
       );
-      
-      if (success) {
-        
-      }
+
+      if (success) {}
     } else {
       final success = await authProvider.register(
         username: _usernameController.text.trim(),
@@ -278,9 +364,10 @@ class _AuthScreenState extends State<AuthScreen> {
         lastName: _lastNameController.text.trim(),
         password: _passwordController.text,
         email: _emailController.text.trim(),
-        dob: _dobController.text.trim(),
+        dob:
+            '${_yearController.text.trim()}-${_monthController.text.trim().padLeft(2, '0')}-${_dayController.text.trim().padLeft(2, '0')}',
       );
-      
+
       if (success) {
         setState(() {
           _isLoginMode = true;

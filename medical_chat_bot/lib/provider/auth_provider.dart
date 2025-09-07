@@ -86,6 +86,23 @@ class AuthProvider with ChangeNotifier {
       print('Failed to get user profile: $e');
     }
   }
+  // In your AuthProvider class
+Future<bool> updateProfile({
+  required String username,
+  required String firstName,
+  required String lastName,
+  required String dob,
+}) async {
+  try {
+    // Make API call to update profile
+    // Update local user data
+    // Return success status
+    return true;
+  } catch (e) {
+    // Handle error
+    return false;
+  }
+}
 
   Future<void> loadSavedToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -103,6 +120,7 @@ class AuthProvider with ChangeNotifier {
     _user = null;
     _apiService.setAccessToken('');
     notifyListeners();
+    return Future.value();
   }
 }
 

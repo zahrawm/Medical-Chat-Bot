@@ -1,16 +1,11 @@
-
 class User {
-  final String email;
+  final String? username;
   final String? firstName;
   final String? lastName;
-  final String? username;
+  final String? email;
+  final String? dob;
 
-  User({
-    required this.email,
-    this.firstName,
-    this.lastName,
-    this.username,
-  });
+  User({this.email, this.firstName, this.lastName, this.username, this.dob});
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -18,7 +13,17 @@ class User {
       firstName: json['first_name'],
       lastName: json['last_name'],
       username: json['username'],
+      dob: json['dob'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'first_name': firstName,
+      'last_name': lastName,
+      'username': username,
+    };
   }
 }
 
@@ -32,14 +37,56 @@ class Message {
     required this.isUser,
     required this.timestamp,
   });
+
+  // Convert to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'isUser': isUser,
+      'timestamp': timestamp.millisecondsSinceEpoch,
+    };
+  }
+
+  // Create from JSON
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      content: json['content'],
+      isUser: json['isUser'],
+      timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp']),
+    );
+  }
+
+  // Create a copy with updated properties
+  Message copyWith({String? content, bool? isUser, DateTime? timestamp}) {
+    return Message(
+      content: content ?? this.content,
+      isUser: isUser ?? this.isUser,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
 }
 
 class Conversation {
   final String threadId;
   final List<Message> messages;
 
-  Conversation({
-    required this.threadId,
-    required this.messages,
-  });
+  Conversation({required this.threadId, required this.messages});
+
+  // Convert to JSON for storage
+  Map<String, dynamic> toJson() {
+    return {
+      'threadId': threadId,
+      'messages': messages.map((msg) => msg.toJson()).toList(),
+    };
+  }
+
+  // Create from JSON
+  factory Conversation.fromJson(Map<String, dynamic> json) {
+    return Conversation(
+      threadId: json['threadId'],
+      messages: (json['messages'] as List)
+          .map((msgJson) => Message.fromJson(msgJson))
+          .toList(),
+    );
+  }
 }

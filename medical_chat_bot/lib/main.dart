@@ -4,7 +4,7 @@ import 'package:medical_chat_bot/service/auth_wrapper.dart';
 
 import 'package:provider/provider.dart';
 
-void main() {
+  main() {
   runApp(const MyApp());
 }
 
@@ -16,9 +16,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false, 
         title: 'IRIS Chat',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.green, 
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: AuthWrapper(),
