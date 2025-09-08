@@ -13,8 +13,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _dobController = TextEditingController();
-  
+  final _dobMonthController = TextEditingController();
+  final _dobYearController = TextEditingController();
+  final _dobDayController =
+      TextEditingController(); // Not used, but kept for potential future use
+
   bool _isEditing = false;
   bool _isLoading = false;
 
@@ -32,7 +35,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _firstNameController.text = authProvider.user?.firstName ?? '';
     _lastNameController.text = authProvider.user?.lastName ?? '';
     _emailController.text = authProvider.user?.email ?? '';
-    _dobController.text = authProvider.user?.dob ?? '';
+
+    // Parse existing DOB if available
+    final dob = authProvider.user?.dob ?? '';
+    if (dob.isNotEmpty) {
+      _parseDOB(dob);
+    }
+  }
+
+  void _parseDOB(String dob) {
+    // Assuming DOB format is MM/YYYY or YYYY-MM
+    if (dob.contains('/')) {
+      final parts = dob.split('/');
+      if (parts.length >= 2) {
+        _dobMonthController.text = parts[0];
+        _dobYearController.text = parts.length == 3 ? parts[2] : parts[1];
+        _dobDayController.text = parts.length == 3 ? parts[1] : '';
+      }
+    } else if (dob.contains('-')) {
+      final parts = dob.split('-');
+      if (parts.length >= 2) {
+        if (parts[0].length == 4) {
+          // Format: YYYY-MM
+          _dobYearController.text = parts[0];
+          _dobMonthController.text = parts[1];
+          _dobDayController.text = parts[2];
+        } else {
+          // Format: MM-YYYY
+          _dobMonthController.text = parts[0];
+          _dobYearController.text = parts[1];
+          _dobDayController.text = parts[2];
+        }
+      }
+    }
+  }
+
+  String _formatDOB() {
+    final month = _dobMonthController.text.trim();
+    final year = _dobYearController.text.trim();
+    final day = _dobDayController.text.trim();
+
+    if (month.isNotEmpty && year.isNotEmpty) {
+      return '$month/$year';
+    }
+    return '';
   }
 
   @override
@@ -103,7 +149,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 100,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.green.shade400, Colors.green.shade600],
+                            colors: [
+                              Colors.green.shade400,
+                              Colors.green.shade600,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -160,10 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 4),
                   Text(
                     '@${_usernameController.text}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -242,12 +288,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 16),
 
-                    // Date of Birth
-                    _buildProfileField(
-                      'Date of Birth',
-                      _dobController,
-                      Icons.calendar_today,
-                      enabled: _isEditing,
+                    // Date of Birth - Month and Year only
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Birth Month & Year',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: _buildDOBField(
+                                'Month',
+                                _dobMonthController,
+                                '01-12',
+                                maxLength: 2,
+                                enabled: _isEditing,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              flex: 3,
+                              child: _buildDOBField(
+                                'Year',
+                                _dobYearController,
+                                'YYYY',
+                                maxLength: 4,
+                                enabled: _isEditing,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              flex: 3,
+                              child: _buildDOBField(
+                                'Day',
+                                _dobDayController,
+                                '',
+                                maxLength: 2,
+                                enabled: _isEditing,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -329,13 +419,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icon(Icons.logout, color: Colors.white),
                 label: Text(
                   'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.shade600,
+                  backgroundColor: Colors.green.shade600,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -393,6 +480,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildDOBField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    int maxLength = 2,
+    bool enabled = true,
+  }) {
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: TextInputType.number,
+      maxLength: maxLength,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        counterText: '', // Remove character counter
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: enabled ? Colors.green.shade200 : Colors.grey.shade300,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.green.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        fillColor: enabled ? null : Colors.grey.shade50,
+        filled: !enabled,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      ),
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return 'Required';
+        }
+
+        final intValue = int.tryParse(value!);
+        if (intValue == null) {
+          return 'Invalid';
+        }
+
+        if (label == 'Month' && (intValue < 1 || intValue > 12)) {
+          return '1-12';
+        } else if (label == 'Year' &&
+            (intValue < 1900 || intValue > DateTime.now().year)) {
+          return 'Invalid year';
+        }
+
+        return null;
+      },
+    );
+  }
+
   Widget _buildSettingsOption(
     String title,
     IconData icon, {
@@ -400,7 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     VoidCallback? onTap,
   }) {
     final textColor = color ?? Colors.black87;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -434,14 +581,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getInitials() {
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
-    
+
     if (firstName.isEmpty && lastName.isEmpty) {
       return 'U'; // Default for User
     }
-    
+
     final firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
     final lastInitial = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
-    
+
     return '$firstInitial$lastInitial';
   }
 
@@ -454,20 +601,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // You'll need to implement updateProfile method in your AuthProvider
       final success = await authProvider.updateProfile(
         username: _usernameController.text.trim(),
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
-        dob: _dobController.text.trim(),
+        dob:
+            _formatDOB(), // Format the DOB from separate fields (now just month/year)
       );
 
       if (success) {
         setState(() {
           _isEditing = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Profile updated successfully'),
@@ -497,7 +645,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _changePassword() {
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -628,7 +775,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _dobController.dispose();
+    _dobMonthController.dispose();
+    _dobDayController.dispose();
+    _dobYearController.dispose();
     super.dispose();
   }
 }

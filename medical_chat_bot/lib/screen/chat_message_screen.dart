@@ -34,7 +34,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     _thinkingAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 200),
+      duration: Duration(milliseconds:  50),
     )..repeat();
     _thinkingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
