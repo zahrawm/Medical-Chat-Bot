@@ -351,7 +351,6 @@ class ChatProvider with ChangeNotifier {
       final messagesJson =
           prefs.getStringList('messages_$conversationId') ?? [];
 
-      bool loadSuccess = false;
       if (messagesJson.isNotEmpty) {
         final loadedMessages = <Message>[];
         for (String json in messagesJson) {
@@ -365,18 +364,12 @@ class ChatProvider with ChangeNotifier {
           }
         }
 
-       // CRITICAL FIX: Only update messages if we successfully loaded something
-// OR if this is a legitimately empty conversation
-if (loadSuccess || loadedMessages.isEmpty) {
-  _messages = loadedMessages;
-  print("DEBUG: Setting messages to ${loadedMessages.length} messages");
-  for (int i = 0; i < loadedMessages.length && i < 3; i++) {
-    print("DEBUG: Message $i - isUser: ${loadedMessages[i].isUser}, content: '${loadedMessages[i].content.substring(0, loadedMessages[i].content.length > 50 ? 50 : loadedMessages[i].content.length)}...'");
-  }
-  if (loadedMessages.isNotEmpty) {
-    _messageCache[conversationId] = List.from(loadedMessages);
-  }
-}
+        if (loadedMessages.isNotEmpty) {
+          print(
+            'Successfully loaded ${loadedMessages.length} messages from local storage',
+          );
+          return loadedMessages;
+        }
       }
 
       print(
@@ -934,6 +927,7 @@ if (loadSuccess || loadedMessages.isEmpty) {
   }
 
   Future<void> _createNewConversation(String firstMessage) async {
+    // FIXED: Generate a proper conversation ID when creating new conversation
     final conversationId = DateTime.now().millisecondsSinceEpoch.toString();
     _currentConversationId = conversationId;
 
@@ -983,7 +977,7 @@ if (loadSuccess || loadedMessages.isEmpty) {
     await clearCurrentConversation();
   }
 
-  // Start a new conversation with proper cleanup and state management
+  // FIXED: Start a new conversation with proper conversation ID generation
   Future<void> startNewConversation() async {
     if (_disposed) return;
 
@@ -993,23 +987,44 @@ if (loadSuccess || loadedMessages.isEmpty) {
         await _saveCurrentConversation();
       }
 
-      // Clear all state
+      // CRITICAL FIX: Generate a new conversation ID immediately
+      // This prevents null errors when navigating to ChatDetailsScreen
+      final newConversationId = 'new_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Clear all state and set new conversation ID
       _messages.clear();
       _currentThreadId = null;
-      _currentConversationId = null;
+      _currentConversationId = newConversationId;
       _error = null;
       _isLoading = false;
       _isTyping = false;
       _isLoadingConversation = false;
 
+      // Create a placeholder conversation entry
+      final placeholderConversation = ConversationHistory(
+        id: newConversationId,
+        title: 'New Conversation',
+        lastMessage: 'Start typing to begin...',
+        timestamp: DateTime.now(),
+        messageCount: 0,
+        threadId: null, // Will be set when first message is sent
+      );
+
+      // Add to history at the top
+      _conversationHistory.insert(0, placeholderConversation);
+
       // Always notify listeners when starting new conversation
       notifyListeners();
+
+      print('Started new conversation with ID: $newConversationId');
     } catch (e) {
       print('Error starting new conversation: $e');
-      // Force clear state even if save fails
+      // Force clear state even if save fails, but still generate ID
+      final fallbackId = 'fallback_${DateTime.now().millisecondsSinceEpoch}';
+
       _messages.clear();
       _currentThreadId = null;
-      _currentConversationId = null;
+      _currentConversationId = fallbackId;
       _error = null;
       _isLoading = false;
       _isTyping = false;
