@@ -246,13 +246,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 20),
 
-                    // Username
-                    _buildProfileField(
-                      'Username',
-                      _usernameController,
-                      Icons.person_outline,
-                      enabled: _isEditing,
-                    ),
                     SizedBox(height: 16),
 
                     // First Name & Last Name
@@ -278,6 +271,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     SizedBox(height: 16),
+                    // Username
+                    _buildProfileField(
+                      'Username',
+                      _usernameController,
+                      Icons.person_outline,
+                      enabled: _isEditing,
+                    ),
 
                     // Email
                     _buildProfileField(

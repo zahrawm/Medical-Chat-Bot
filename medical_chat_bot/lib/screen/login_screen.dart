@@ -49,22 +49,6 @@ class _AuthScreenState extends State<AuthScreen> {
                       SizedBox(height: 32),
 
                       if (!_isLoginMode) ...[
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Please enter username';
-                            }
-                            return null;
-                          },
-                        ),
                         SizedBox(height: 16),
 
                         Row(
@@ -107,7 +91,23 @@ class _AuthScreenState extends State<AuthScreen> {
                           ],
                         ),
                         SizedBox(height: 16),
-
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            labelText: 'Username',
+                            prefixIcon: Icon(Icons.person_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return 'Please enter username';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -126,29 +126,6 @@ class _AuthScreenState extends State<AuthScreen> {
                                   child: TextFormField(
                                     controller: _dayController,
                                     decoration: InputDecoration(
-                                      labelText: 'Day',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value?.isEmpty ?? true) {
-                                        return 'Day required';
-                                      }
-                                      final day = int.tryParse(value!);
-                                      if (day == null || day < 1 || day > 31) {
-                                        return 'Invalid day';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _monthController,
-                                    decoration: InputDecoration(
                                       labelText: 'Month',
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -164,6 +141,29 @@ class _AuthScreenState extends State<AuthScreen> {
                                           month < 1 ||
                                           month > 12) {
                                         return 'Invalid month';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _monthController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Day',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    validator: (value) {
+                                      if (value?.isEmpty ?? true) {
+                                        return 'Day required';
+                                      }
+                                      final day = int.tryParse(value!);
+                                      if (day == null || day < 1 || day > 31) {
+                                        return 'Invalid day';
                                       }
                                       return null;
                                     },
@@ -205,7 +205,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
+
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -227,7 +227,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
+                          suffixIcon: Icon(Icons.remove_red_eye),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

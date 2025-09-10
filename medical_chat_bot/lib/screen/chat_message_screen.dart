@@ -302,7 +302,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ), // Professional grey
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                padding: EdgeInsets.all(4),
 
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment
@@ -320,15 +320,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Iris Metabolic Health Coach',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Colors.black, // White text on grey background
-                        ),
+
+                    Text(
+                      'Iris Metabolic Health Coach',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Colors.black, // White text on grey background
                       ),
                     ),
                   ],
@@ -336,6 +334,23 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Recent Chats',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
+
+          // E
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
@@ -391,7 +406,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   },
                   color: Colors.green.shade600,
                   child: ListView.builder(
-                    padding: EdgeInsets.all(8),
+                    padding: EdgeInsets.all(10),
                     physics: AlwaysScrollableScrollPhysics(),
                     itemCount: chatProvider.conversationHistory.length,
                     itemBuilder: (context, index) {
@@ -700,7 +715,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.grey.shade200)),
             ),
@@ -731,8 +746,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 'assets/logo.png',
-                width: 50,
-                height: 50,
+                width: 20,
+                height: 20,
                 fit: BoxFit.cover,
               ),
             ),
@@ -841,7 +856,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget _buildChatList(ChatProvider chatProvider) {
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
+
       itemCount:
           chatProvider.messages.length + (chatProvider.isLoading ? 1 : 0),
       itemBuilder: (context, index) {
