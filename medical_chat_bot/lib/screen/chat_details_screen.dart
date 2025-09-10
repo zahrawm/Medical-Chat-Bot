@@ -165,19 +165,14 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green.shade400, Colors.green.shade600],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
                   'assets/logo.png',
-                  width: 40,
-                  height: 40,
+                  width: 20,
+                  height: 20,
                   fit: BoxFit.cover,
                 ),
               ),

@@ -325,16 +325,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             SizedBox(width: 16),
-                            Expanded(
-                              flex: 3,
-                              child: _buildDOBField(
-                                'Day',
-                                _dobDayController,
-                                '',
-                                maxLength: 2,
-                                enabled: _isEditing,
-                              ),
-                            ),
                           ],
                         ),
                       ],
