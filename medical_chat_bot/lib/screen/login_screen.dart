@@ -95,7 +95,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           controller: _usernameController,
                           decoration: InputDecoration(
                             labelText: 'Username',
-                            prefixIcon: Icon(Icons.person_outline),
+                            
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

@@ -20,6 +20,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _showQuickQuestions = true;
 
   final List<String> _quickQuestions = [
+    "Your AI metabolic  health coach is ready to  provide personalized guidance or your wellness journey",
     "What causes obesity and type 2 diabetes?",
     "how many carbs should I eat daily to support brain function",
     "Does eating saturated fat from meat, butter or egg increase risk of CVD",
@@ -302,7 +303,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ), // Professional grey
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(4),
+                padding: EdgeInsets.all(16), //
 
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment
@@ -336,7 +337,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -406,7 +407,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   },
                   color: Colors.green.shade600,
                   child: ListView.builder(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     physics: AlwaysScrollableScrollPhysics(),
                     itemCount: chatProvider.conversationHistory.length,
                     itemBuilder: (context, index) {
@@ -415,298 +416,301 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       final isCurrentConversation =
                           conversation.id == chatProvider.currentConversationId;
 
-                      return ListTile(
-                        title: Text(
-                          conversation.title,
-                          style: TextStyle(
-                            fontWeight: isCurrentConversation
-                                ? FontWeight.bold
-                                : FontWeight.w600,
-                            fontSize: 14,
-                            color: isCurrentConversation
-                                ? Colors.black87
-                                : Colors.black87,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.access_time,
-                                  size: 12,
-                                  color: Colors.grey.shade500,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  chatProvider.getConversationPreview(
-                                    conversation,
-                                  ),
-                                  style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                if (chatProvider.isSyncingWithBackend) ...[
-                                  SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 10,
-                                    height: 10,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1,
-                                      color: Colors.green.shade400,
-                                    ),
-                                  ),
-                                ],
-                              ],
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 2),
+                        child: ListTile(
+                          title: Text(
+                            conversation.title,
+                            style: TextStyle(
+                              fontWeight: isCurrentConversation
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              fontSize: 14,
+                              color: isCurrentConversation
+                                  ? Colors.black87
+                                  : Colors.black87,
                             ),
-                          ],
-                        ),
-
-                        // Replace your ListTile onTap handler in the history drawer with this safer version:
-                        // Replace your ListTile onTap handler in the history drawer with this:
-                        onTap: chatProvider.isLoadingConversation
-                            ? null
-                            : () async {
-                                // await chatProvider!.loadConversation(
-                                //   conversation.id.toString(),
-                                // );
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatDetailsScreen(
-                                      conversationID: conversation.threadId,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    size: 12,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    chatProvider.getConversationPreview(
+                                      conversation,
+                                    ),
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 11,
                                     ),
                                   ),
-                                );
-                              },
+                                  if (chatProvider.isSyncingWithBackend) ...[
+                                    SizedBox(width: 8),
+                                    SizedBox(
+                                      width: 10,
+                                      height: 10,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1,
+                                        color: Colors.green.shade400,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
 
-                        // : () async {
-                        //     // Close drawer first
-                        //     Navigator.of(context).pop();
-                        //
-                        //     try {
-                        //       // Validate conversation data
-                        //       if (conversation.id.isEmpty) {
-                        //         if (mounted) {
-                        //           ScaffoldMessenger.of(
-                        //             context,
-                        //           ).showSnackBar(
-                        //             SnackBar(
-                        //               content: Text(
-                        //                 'Invalid conversation: missing ID',
-                        //               ),
-                        //               backgroundColor:
-                        //                   Colors.red.shade600,
-                        //               duration: Duration(seconds: 2),
-                        //             ),
-                        //           );
-                        //         }
-                        //         return;
-                        //       }
-                        //
-                        //       // Don't reload if it's already the current conversation
-                        //       if (conversation.id == chatProvider.currentConversationId) {
-                        //         // Just scroll to bottom if messages exist
-                        //         if (chatProvider.messages.isNotEmpty) {
-                        //           WidgetsBinding.instance
-                        //               .addPostFrameCallback((_) {
-                        //                 _scrollToBottom();
-                        //               });
-                        //         }
-                        //         return;
-                        //       }
-                        //
-                        //       // Show loading feedback
-                        //       if (mounted) {
-                        //         ScaffoldMessenger.of(
-                        //           context,
-                        //         ).showSnackBar(
-                        //           SnackBar(
-                        //             content: Row(
-                        //               children: [
-                        //                 SizedBox(
-                        //                   width: 16,
-                        //                   height: 16,
-                        //                   child:
-                        //                       CircularProgressIndicator(
-                        //                         strokeWidth: 2,
-                        //                         color: Colors.white,
-                        //                       ),
-                        //                 ),
-                        //                 SizedBox(width: 12),
-                        //                 Expanded(
-                        //                   child: Text(
-                        //                     'Loading "${conversation.title.length > 30 ? conversation.title.substring(0, 30) + '...' : conversation.title}"',
-                        //                   ),
-                        //                 ),
-                        //               ],
-                        //             ),
-                        //             backgroundColor: Colors.blue.shade600,
-                        //             duration: Duration(seconds: 2),
-                        //           ),
-                        //         );
-                        //       }
-                        //
-                        //       // Load the conversation
-                        //       // await chatProvider.loadConversation(
-                        //       //   conversation.id,
-                        //       // );
-                        //
-                        //       Navigator.push(context, MaterialPageRoute(builder: (context)=>ChatScreen()));
-                        //
-                        //
-                        //       // Clear loading snackbar
-                        //       if (mounted) {
-                        //         ScaffoldMessenger.of(
-                        //           context,
-                        //         ).hideCurrentSnackBar();
-                        //       }
-                        //
-                        //       // Show result feedback
-                        //       if (chatProvider.messages.isNotEmpty) {
-                        //         if (mounted) {
-                        //           ScaffoldMessenger.of(
-                        //             context,
-                        //           ).showSnackBar(
-                        //             SnackBar(
-                        //               content: Text(
-                        //                 'Loaded ${chatProvider.messages.length} messages',
-                        //               ),
-                        //               backgroundColor:
-                        //                   Colors.green.shade600,
-                        //               duration: Duration(seconds: 1),
-                        //             ),
-                        //           );
-                        //         }
-                        //
-                        //         // Scroll to bottom after loading
-                        //         WidgetsBinding.instance
-                        //             .addPostFrameCallback((_) {
-                        //               _scrollToBottom();
-                        //             });
-                        //       } else {
-                        //         // Conversation loaded but empty - this is OK, don't show as error
-                        //         if (mounted) {
-                        //           ScaffoldMessenger.of(
-                        //             context,
-                        //           ).showSnackBar(
-                        //             SnackBar(
-                        //               content: Text(
-                        //                 'This conversation is empty. Start chatting!',
-                        //               ),
-                        //               backgroundColor:
-                        //                   Colors.blue.shade600,
-                        //               duration: Duration(seconds: 2),
-                        //             ),
-                        //           );
-                        //         }
-                        //       }
-                        //     } catch (e) {
-                        //       print('Error loading conversation: $e');
-                        //
-                        //       // Clear loading snackbar
-                        //       if (mounted) {
-                        //         ScaffoldMessenger.of(
-                        //           context,
-                        //         ).hideCurrentSnackBar();
-                        //       }
-                        //
-                        //       // Show error with retry option
-                        //       if (mounted) {
-                        //         ScaffoldMessenger.of(
-                        //           context,
-                        //         ).showSnackBar(
-                        //           SnackBar(
-                        //             content: Column(
-                        //               mainAxisSize: MainAxisSize.min,
-                        //               crossAxisAlignment:
-                        //                   CrossAxisAlignment.start,
-                        //               children: [
-                        //                 Text(
-                        //                   'Failed to load conversation',
-                        //                 ),
-                        //                 if (e.toString().isNotEmpty)
-                        //                   Text(
-                        //                     e.toString().length > 60
-                        //                         ? '${e.toString().substring(0, 60)}...'
-                        //                         : e.toString(),
-                        //                     style: TextStyle(
-                        //                       fontSize: 12,
-                        //                       color: Colors.white70,
-                        //                     ),
-                        //                   ),
-                        //               ],
-                        //             ),
-                        //             backgroundColor: Colors.red.shade600,
-                        //             duration: Duration(seconds: 4),
-                        //             action: SnackBarAction(
-                        //               label: 'RETRY',
-                        //               textColor: Colors.white,
-                        //               onPressed: () async {
-                        //                 try {
-                        //                   await chatProvider
-                        //                       .loadConversation(
-                        //                         conversation.id,
-                        //                       );
-                        //                   if (chatProvider
-                        //                       .messages
-                        //                       .isNotEmpty) {
-                        //                     ScaffoldMessenger.of(
-                        //                       context,
-                        //                     ).showSnackBar(
-                        //                       SnackBar(
-                        //                         content: Text(
-                        //                           'Successfully loaded conversation',
-                        //                         ),
-                        //                         backgroundColor:
-                        //                             Colors.green.shade600,
-                        //                         duration: Duration(
-                        //                           seconds: 1,
-                        //                         ),
-                        //                       ),
-                        //                     );
-                        //                     _scrollToBottom();
-                        //                   }
-                        //                 } catch (retryError) {
-                        //                   ScaffoldMessenger.of(
-                        //                     context,
-                        //                   ).showSnackBar(
-                        //                     SnackBar(
-                        //                       content: Text(
-                        //                         'Retry failed. Please try again later.',
-                        //                       ),
-                        //                       backgroundColor:
-                        //                           Colors.red.shade600,
-                        //                       duration: Duration(
-                        //                         seconds: 2,
-                        //                       ),
-                        //                     ),
-                        //                   );
-                        //                 }
-                        //               },
-                        //             ),
-                        //           ),
-                        //         );
-                        //       }
-                        //     }
-                        //   },
-                        trailing:
-                            chatProvider.isLoadingConversation &&
-                                isCurrentConversation
-                            ? SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.green.shade600,
-                                ),
-                              )
-                            : null,
+                          // Replace your ListTile onTap handler in the history drawer with this safer version:
+                          // Replace your ListTile onTap handler in the history drawer with this:
+                          onTap: chatProvider.isLoadingConversation
+                              ? null
+                              : () async {
+                                  // await chatProvider!.loadConversation(
+                                  //   conversation.id.toString(),
+                                  // );
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatDetailsScreen(
+                                        conversationID: conversation.threadId,
+                                      ),
+                                    ),
+                                  );
+                                },
+
+                          // : () async {
+                          //     // Close drawer first
+                          //     Navigator.of(context).pop();
+                          //
+                          //     try {
+                          //       // Validate conversation data
+                          //       if (conversation.id.isEmpty) {
+                          //         if (mounted) {
+                          //           ScaffoldMessenger.of(
+                          //             context,
+                          //           ).showSnackBar(
+                          //             SnackBar(
+                          //               content: Text(
+                          //                 'Invalid conversation: missing ID',
+                          //               ),
+                          //               backgroundColor:
+                          //                   Colors.red.shade600,
+                          //               duration: Duration(seconds: 2),
+                          //             ),
+                          //           );
+                          //         }
+                          //         return;
+                          //       }
+                          //
+                          //       // Don't reload if it's already the current conversation
+                          //       if (conversation.id == chatProvider.currentConversationId) {
+                          //         // Just scroll to bottom if messages exist
+                          //         if (chatProvider.messages.isNotEmpty) {
+                          //           WidgetsBinding.instance
+                          //               .addPostFrameCallback((_) {
+                          //                 _scrollToBottom();
+                          //               });
+                          //         }
+                          //         return;
+                          //       }
+                          //
+                          //       // Show loading feedback
+                          //       if (mounted) {
+                          //         ScaffoldMessenger.of(
+                          //           context,
+                          //         ).showSnackBar(
+                          //           SnackBar(
+                          //             content: Row(
+                          //               children: [
+                          //                 SizedBox(
+                          //                   width: 16,
+                          //                   height: 16,
+                          //                   child:
+                          //                       CircularProgressIndicator(
+                          //                         strokeWidth: 2,
+                          //                         color: Colors.white,
+                          //                       ),
+                          //                 ),
+                          //                 SizedBox(width: 12),
+                          //                 Expanded(
+                          //                   child: Text(
+                          //                     'Loading "${conversation.title.length > 30 ? conversation.title.substring(0, 30) + '...' : conversation.title}"',
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //             backgroundColor: Colors.blue.shade600,
+                          //             duration: Duration(seconds: 2),
+                          //           ),
+                          //         );
+                          //       }
+                          //
+                          //       // Load the conversation
+                          //       // await chatProvider.loadConversation(
+                          //       //   conversation.id,
+                          //       // );
+                          //
+                          //       Navigator.push(context, MaterialPageRoute(builder: (context)=>ChatScreen()));
+                          //
+                          //
+                          //       // Clear loading snackbar
+                          //       if (mounted) {
+                          //         ScaffoldMessenger.of(
+                          //           context,
+                          //         ).hideCurrentSnackBar();
+                          //       }
+                          //
+                          //       // Show result feedback
+                          //       if (chatProvider.messages.isNotEmpty) {
+                          //         if (mounted) {
+                          //           ScaffoldMessenger.of(
+                          //             context,
+                          //           ).showSnackBar(
+                          //             SnackBar(
+                          //               content: Text(
+                          //                 'Loaded ${chatProvider.messages.length} messages',
+                          //               ),
+                          //               backgroundColor:
+                          //                   Colors.green.shade600,
+                          //               duration: Duration(seconds: 1),
+                          //             ),
+                          //           );
+                          //         }
+                          //
+                          //         // Scroll to bottom after loading
+                          //         WidgetsBinding.instance
+                          //             .addPostFrameCallback((_) {
+                          //               _scrollToBottom();
+                          //             });
+                          //       } else {
+                          //         // Conversation loaded but empty - this is OK, don't show as error
+                          //         if (mounted) {
+                          //           ScaffoldMessenger.of(
+                          //             context,
+                          //           ).showSnackBar(
+                          //             SnackBar(
+                          //               content: Text(
+                          //                 'This conversation is empty. Start chatting!',
+                          //               ),
+                          //               backgroundColor:
+                          //                   Colors.blue.shade600,
+                          //               duration: Duration(seconds: 2),
+                          //             ),
+                          //           );
+                          //         }
+                          //       }
+                          //     } catch (e) {
+                          //       print('Error loading conversation: $e');
+                          //
+                          //       // Clear loading snackbar
+                          //       if (mounted) {
+                          //         ScaffoldMessenger.of(
+                          //           context,
+                          //         ).hideCurrentSnackBar();
+                          //       }
+                          //
+                          //       // Show error with retry option
+                          //       if (mounted) {
+                          //         ScaffoldMessenger.of(
+                          //           context,
+                          //         ).showSnackBar(
+                          //           SnackBar(
+                          //             content: Column(
+                          //               mainAxisSize: MainAxisSize.min,
+                          //               crossAxisAlignment:
+                          //                   CrossAxisAlignment.start,
+                          //               children: [
+                          //                 Text(
+                          //                   'Failed to load conversation',
+                          //                 ),
+                          //                 if (e.toString().isNotEmpty)
+                          //                   Text(
+                          //                     e.toString().length > 60
+                          //                         ? '${e.toString().substring(0, 60)}...'
+                          //                         : e.toString(),
+                          //                     style: TextStyle(
+                          //                       fontSize: 12,
+                          //                       color: Colors.white70,
+                          //                     ),
+                          //                   ),
+                          //               ],
+                          //             ),
+                          //             backgroundColor: Colors.red.shade600,
+                          //             duration: Duration(seconds: 4),
+                          //             action: SnackBarAction(
+                          //               label: 'RETRY',
+                          //               textColor: Colors.white,
+                          //               onPressed: () async {
+                          //                 try {
+                          //                   await chatProvider
+                          //                       .loadConversation(
+                          //                         conversation.id,
+                          //                       );
+                          //                   if (chatProvider
+                          //                       .messages
+                          //                       .isNotEmpty) {
+                          //                     ScaffoldMessenger.of(
+                          //                       context,
+                          //                     ).showSnackBar(
+                          //                       SnackBar(
+                          //                         content: Text(
+                          //                           'Successfully loaded conversation',
+                          //                         ),
+                          //                         backgroundColor:
+                          //                             Colors.green.shade600,
+                          //                         duration: Duration(
+                          //                           seconds: 1,
+                          //                         ),
+                          //                       ),
+                          //                     );
+                          //                     _scrollToBottom();
+                          //                   }
+                          //                 } catch (retryError) {
+                          //                   ScaffoldMessenger.of(
+                          //                     context,
+                          //                   ).showSnackBar(
+                          //                     SnackBar(
+                          //                       content: Text(
+                          //                         'Retry failed. Please try again later.',
+                          //                       ),
+                          //                       backgroundColor:
+                          //                           Colors.red.shade600,
+                          //                       duration: Duration(
+                          //                         seconds: 2,
+                          //                       ),
+                          //                     ),
+                          //                   );
+                          //                 }
+                          //               },
+                          //             ),
+                          //           ),
+                          //         );
+                          //       }
+                          //     }
+                          //   },
+                          trailing:
+                              chatProvider.isLoadingConversation &&
+                                  isCurrentConversation
+                              ? SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.green.shade600,
+                                  ),
+                                )
+                              : null,
+                        ),
                       );
                     },
                   ),
@@ -739,8 +743,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         children: [
           SizedBox(height: 40),
           Container(
-            width: 100,
-            height: 100,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
