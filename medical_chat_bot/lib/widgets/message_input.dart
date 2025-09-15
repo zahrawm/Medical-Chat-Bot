@@ -32,7 +32,7 @@ class _MessageBubbleState extends State<MessageBubble>
     );
 
     _fadeController = AnimationController(
-      duration: Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 50),
       vsync: this,
     );
 
@@ -58,7 +58,7 @@ class _MessageBubbleState extends State<MessageBubble>
     });
 
     // Start typing animation after a small delay
-    Future.delayed(Duration(milliseconds: 300), () {
+    Future.delayed(Duration(milliseconds: 50), () {
       if (mounted) {
         _typewriterController.forward();
       }

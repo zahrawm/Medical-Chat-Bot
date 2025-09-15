@@ -20,7 +20,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _showQuickQuestions = true;
 
   final List<String> _quickQuestions = [
-    "Your AI metabolic  health coach is ready to  provide personalized guidance or your wellness journey",
     "What causes obesity and type 2 diabetes?",
     "how many carbs should I eat daily to support brain function",
     "Does eating saturated fat from meat, butter or egg increase risk of CVD",
@@ -34,7 +33,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     _thinkingAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 10),
+      duration: Duration(milliseconds: 50),
     )..repeat();
     _thinkingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -264,17 +263,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            PopupMenuItem(
-              value: 'clear',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.clear_all, color: Colors.grey.shade600, size: 20),
-                  SizedBox(width: 8),
-                  Text('Clear Chat', style: TextStyle(fontSize: 14)),
-                ],
-              ),
-            ),
+
             PopupMenuItem(
               value: 'logout',
               child: Row(

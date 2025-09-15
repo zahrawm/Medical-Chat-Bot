@@ -20,7 +20,7 @@ class ApiService {
     if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
   };
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future login(String email, String password) async {
     try {
       final response = await http
           .post(
@@ -35,12 +35,10 @@ class ApiService {
         _accessToken = data['access_token'];
         return data;
       } else {
-        throw Exception(
-          'Login failed: ${response.statusCode} - ${response.body}',
-        );
+        return "Incorrect Username";
       }
     } catch (e) {
-      throw Exception('Login error: $e');
+      return "Incorrect Username";
     }
   }
 

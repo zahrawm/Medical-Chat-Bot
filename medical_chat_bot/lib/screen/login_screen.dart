@@ -20,10 +20,12 @@ class _AuthScreenState extends State<AuthScreen> {
   final _monthController = TextEditingController();
   final _yearController = TextEditingController();
 
+  bool _isPasswordVisible = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(000000),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -95,7 +97,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           controller: _usernameController,
                           decoration: InputDecoration(
                             labelText: 'Username',
-                            
+
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -224,10 +226,21 @@ class _AuthScreenState extends State<AuthScreen> {
 
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          suffixIcon: Icon(Icons.remove_red_eye),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -337,7 +350,32 @@ class _AuthScreenState extends State<AuthScreen> {
         _passwordController.text,
       );
 
-      if (success) {}
+      if (success) {
+        // Show success message with green background
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  'Login successful!',
+                  style: TextStyle(color: Colors.black, fontSize: 16),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+
+        // Optional: Add a small delay to show the message before navigating
+        await Future.delayed(Duration(milliseconds: 500));
+      }
     } else {
       final success = await authProvider.register(
         username: _usernameController.text.trim(),
@@ -354,7 +392,21 @@ class _AuthScreenState extends State<AuthScreen> {
           _isLoginMode = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration successful! Please login.')),
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Registration successful! Please login.'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
         );
       }
     }

@@ -5,9 +5,9 @@
     
     <!-- Single application tag with all attributes -->
     <application
-        android:label="medical_chat_bot"
+        android:label="Iris Chat"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true">
         
         <activity

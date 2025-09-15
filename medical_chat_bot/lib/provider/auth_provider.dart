@@ -29,15 +29,15 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _setError(null);
-      
+
       final response = await _apiService.login(email, password);
-      
+
       // Save token to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', response['access_token']);
 
       await _getUserProfile();
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -58,7 +58,7 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _setError(null);
-      
+
       await _apiService.register(
         username: username,
         firstName: firstName,
@@ -67,7 +67,7 @@ class AuthProvider with ChangeNotifier {
         email: email,
         dob: dob,
       );
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -86,31 +86,33 @@ class AuthProvider with ChangeNotifier {
       print('Failed to get user profile: $e');
     }
   }
+
   // In your AuthProvider class
-Future<bool> updateProfile({
-  required String username,
-  required String firstName,
-  required String lastName,
-  required String dob,
-}) async {
-  try {
-    // Make API call to update profile
-    // Update local user data
-    // Return success status
-    return true;
-  } catch (e) {
-    // Handle error
-    return false;
+  Future<bool> updateProfile({
+    required String username,
+    required String firstName,
+    required String lastName,
+    required String dob,
+  }) async {
+    try {
+      // Make API call to update profile
+      // Update local user data
+      // Return success status
+      return true;
+    } catch (e) {
+      // Handle error
+      return false;
+    }
   }
-}
 
   Future<void> loadSavedToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    
+
     if (token != null) {
       _apiService.setAccessToken(token);
       await _getUserProfile();
+      notifyListeners();
     }
   }
 
@@ -123,4 +125,3 @@ Future<bool> updateProfile({
     return Future.value();
   }
 }
-

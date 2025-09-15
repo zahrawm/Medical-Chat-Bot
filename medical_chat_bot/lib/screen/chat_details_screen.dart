@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:medical_chat_bot/service/api_service.dart';
 import 'package:provider/provider.dart';
@@ -178,42 +179,8 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    widget.conversationID != null ? 'Chat Details' : 'New Chat',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  if (conversationTitle != null)
-                    Text(
-                      conversationTitle!,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
           ],
         ),
-        actions: [
-          if (widget.conversationID != null)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () => fetchConversation(widget.conversationID),
-            ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _startNewConversation,
-          ),
-        ],
       ),
       body: _buildBody(),
     );
@@ -234,45 +201,6 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
-        ),
-      );
-    }
-
-    if (error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-              const SizedBox(height: 16),
-              Text(
-                'Oops! Something went wrong',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => fetchConversation(widget.conversationID),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
         ),
       );
     }
@@ -355,7 +283,6 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
 
               if (date.isNotEmpty) const SizedBox(height: 16),
 
-              // User input
               if (input.isNotEmpty) ...[
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,12 +324,22 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                 bottomRight: Radius.circular(16),
                               ),
                             ),
-                            child: Text(
-                              input,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                height: 1.4,
-                                color: Colors.black87,
+                            child: MarkdownBody(
+                              data: input,
+                              styleSheet: MarkdownStyleSheet(
+                                p: const TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  color: Colors.black87,
+                                ),
+                                code: TextStyle(
+                                  backgroundColor: Colors.grey.shade200,
+                                  fontFamily: 'monospace',
+                                ),
+                                codeblockDecoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -445,7 +382,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'AI Assistant',
+                            'Iris Chat Bot',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -464,12 +401,62 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                 bottomRight: Radius.circular(16),
                               ),
                             ),
-                            child: Text(
-                              output,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                height: 1.5,
-                                color: Colors.black87,
+                            child: MarkdownBody(
+                              data: output,
+                              styleSheet: MarkdownStyleSheet(
+                                p: const TextStyle(
+                                  fontSize: 15,
+                                  height: 1.5,
+                                  color: Colors.black87,
+                                ),
+                                h1: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
+                                h2: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade600,
+                                ),
+                                h3: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade500,
+                                ),
+                                strong: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                em: const TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.black87,
+                                ),
+                                code: TextStyle(
+                                  backgroundColor: Colors.grey.shade200,
+                                  fontFamily: 'monospace',
+                                  fontSize: 14,
+                                  color: Colors.red.shade700,
+                                ),
+                                codeblockDecoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                blockquote: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                blockquoteDecoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.green.shade300,
+                                      width: 4,
+                                    ),
+                                  ),
+                                ),
+                                listBullet: TextStyle(
+                                  color: Colors.green.shade600,
+                                ),
                               ),
                             ),
                           ),

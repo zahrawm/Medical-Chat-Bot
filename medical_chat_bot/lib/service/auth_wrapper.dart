@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:medical_chat_bot/provider/auth_provider.dart';
 import 'package:medical_chat_bot/provider/chat_provider.dart';
 import 'package:medical_chat_bot/screen/chat_message_screen.dart';
-
 import 'package:medical_chat_bot/screen/login_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -37,7 +36,42 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 ),
               ),
               child: Center(
-                child: CircularProgressIndicator(color: Colors.white),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Add your app logo if you have one
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset("assets/logo.png", height: 100),
+                    ),
+                    SizedBox(height: 32),
+                    CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Iris Chat Bot',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
