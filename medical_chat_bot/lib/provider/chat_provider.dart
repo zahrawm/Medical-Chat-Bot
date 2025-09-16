@@ -1032,6 +1032,156 @@ class ChatProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  // Add this method to your ChatProvider class
+
+  // FIXED: Load conversation silently without triggering typing animation
+  Future<void> loadConversationSilently(String conversationId) async {
+    if (_disposed) return;
+
+    // Validate inputs
+    if (conversationId.isEmpty) {
+      _setError('Invalid conversation ID');
+      return;
+    }
+
+    // Prevent loading the same conversation twice
+    if (_currentConversationId == conversationId && _messages.isNotEmpty) {
+      print(
+        'Conversation $conversationId already loaded with ${_messages.length} messages',
+      );
+      return;
+    }
+
+    try {
+      _setLoadingConversation(true);
+      _setError(null);
+
+      // CRITICAL: DO NOT set _setLoading(true) or _setTyping(true) here
+      // This prevents the typing animation from starting
+
+      print('Loading conversation silently: $conversationId');
+
+      // Save current conversation before switching if it exists and has messages
+      if (_currentConversationId != null &&
+          _currentConversationId != conversationId &&
+          _messages.isNotEmpty) {
+        await _saveCurrentConversation();
+      }
+
+      // Find the conversation to get thread_id
+      final conversation = getConversationById(conversationId);
+      if (conversation == null) {
+        throw Exception('Conversation not found in history');
+      }
+
+      // Validate conversation has required data
+      if (conversation.id.isEmpty) {
+        throw Exception('Invalid conversation: missing ID');
+      }
+
+      // Set the conversation ID and threadId
+      final previousConversationId = _currentConversationId;
+      final previousMessages = List<Message>.from(_messages);
+
+      _currentConversationId = conversationId;
+      if (conversation.threadId != null) {
+        _currentThreadId = conversation.threadId;
+      }
+
+      // Try to load messages from various sources
+      List<Message> loadedMessages = [];
+      bool loadSuccess = false;
+
+      // 1. Try loading from backend if user is logged in and threadId exists
+      if (_apiService.accessToken != null && _currentThreadId != null) {
+        try {
+          print(
+            'Attempting to load from backend with threadId: $_currentThreadId',
+          );
+          loadedMessages = await _loadConversationFromBackend(
+            _currentThreadId!,
+            conversationId,
+          );
+          if (loadedMessages.isNotEmpty) {
+            loadSuccess = true;
+            print(
+              'Successfully loaded ${loadedMessages.length} messages from backend',
+            );
+          }
+        } catch (e) {
+          print('Backend loading failed: $e');
+        }
+      }
+
+      // 2. If backend failed, try loading from local storage
+      if (!loadSuccess) {
+        print('Loading from local storage');
+        try {
+          loadedMessages = await _loadConversationFromLocal(conversationId);
+          if (loadedMessages.isNotEmpty) {
+            loadSuccess = true;
+            print(
+              'Successfully loaded ${loadedMessages.length} messages from local storage',
+            );
+          }
+        } catch (e) {
+          print('Local storage loading failed: $e');
+        }
+      }
+
+      // 3. Try cache as last resort
+      if (!loadSuccess && _messageCache.containsKey(conversationId)) {
+        loadedMessages = List.from(_messageCache[conversationId]!);
+        if (loadedMessages.isNotEmpty) {
+          loadSuccess = true;
+          print(
+            'Successfully loaded ${loadedMessages.length} messages from cache',
+          );
+        }
+      }
+
+      // Only update messages if we successfully loaded something
+      // OR if this is a legitimately empty conversation
+      if (loadSuccess || loadedMessages.isEmpty) {
+        _messages = loadedMessages;
+        if (loadedMessages.isNotEmpty) {
+          _messageCache[conversationId] = List.from(loadedMessages);
+        }
+      } else {
+        // If we failed to load, revert to previous state to prevent blank screen
+        print('Failed to load conversation, reverting to previous state');
+        _currentConversationId = previousConversationId;
+        _messages = previousMessages;
+        throw Exception('Failed to load conversation messages');
+      }
+
+      // IMPORTANT: Ensure typing states are false after silent loading
+      _isLoading = false;
+      _isTyping = false;
+      _setLoadingConversation(false);
+
+      notifyListeners();
+
+      if (loadSuccess && loadedMessages.isNotEmpty) {
+        print(
+          'Successfully loaded conversation $conversationId with ${_messages.length} messages silently',
+        );
+      } else if (loadedMessages.isEmpty) {
+        print('Conversation $conversationId is empty - showing empty state');
+      }
+    } catch (e) {
+      print('Error loading conversation silently: $e');
+      _setError('Failed to load conversation: ${e.toString()}');
+      _setLoadingConversation(false);
+
+      // Ensure no typing animation on error
+      _isLoading = false;
+      _isTyping = false;
+
+      // Don't clear messages on error - keep current state to prevent blank screen
+      notifyListeners();
+    }
+  }
 
   // Delete a conversation from history
   Future<void> deleteConversation(String conversationId) async {

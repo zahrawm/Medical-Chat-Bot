@@ -7,10 +7,12 @@ class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   User? _user;
   bool _isLoading = false;
+  bool _isInitialized = false; // Track if initial auth check is complete
   String? _error;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   String? get error => _error;
   bool get isAuthenticated => _user != null;
   ApiService get apiService => _apiService;
@@ -32,6 +34,12 @@ class AuthProvider with ChangeNotifier {
 
       final response = await _apiService.login(email, password);
 
+      // Check if login failed
+      if (response == "Incorrect Username") {
+        _setError("Invalid email or password");
+        return false;
+      }
+
       // Save token to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', response['access_token']);
@@ -40,7 +48,7 @@ class AuthProvider with ChangeNotifier {
 
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError("Login failed. Please check your credentials.");
       return false;
     } finally {
       _setLoading(false);
@@ -70,7 +78,14 @@ class AuthProvider with ChangeNotifier {
 
       return true;
     } catch (e) {
-      _setError(e.toString());
+      if (e.toString().contains('already exists') ||
+          e.toString().contains('duplicate')) {
+        _setError("Username or email already exists");
+      } else if (e.toString().contains('password')) {
+        _setError("Password requirements not met");
+      } else {
+        _setError("Registration failed. Please try again.");
+      }
       return false;
     } finally {
       _setLoading(false);
@@ -84,10 +99,18 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Failed to get user profile: $e');
+      // If profile fetch fails, clear the token as it might be invalid
+      await _clearInvalidToken();
     }
   }
 
-  // In your AuthProvider class
+  Future<void> _clearInvalidToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    _user = null;
+    _apiService.setAccessToken('');
+  }
+
   Future<bool> updateProfile({
     required String username,
     required String firstName,
@@ -95,6 +118,7 @@ class AuthProvider with ChangeNotifier {
     required String dob,
   }) async {
     try {
+      _setLoading(true);
       // Make API call to update profile
       // Update local user data
       // Return success status
@@ -102,26 +126,55 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       // Handle error
       return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
   Future<void> loadSavedToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    try {
+      _setLoading(true);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
 
-    if (token != null) {
-      _apiService.setAccessToken(token);
-      await _getUserProfile();
-      notifyListeners();
+      if (token != null && token.isNotEmpty) {
+        _apiService.setAccessToken(token);
+        await _getUserProfile();
+      }
+    } catch (e) {
+      print('Error loading saved token: $e');
+      // Clear any invalid token
+      await _clearInvalidToken();
+    } finally {
+      _isInitialized = true;
+      _setLoading(false);
     }
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('access_token');
-    _user = null;
-    _apiService.setAccessToken('');
-    notifyListeners();
-    return Future.value();
+    try {
+      _setLoading(true);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('access_token');
+      _user = null;
+      _apiService.setAccessToken('');
+    } catch (e) {
+      print('Error during logout: $e');
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
+  // Method to refresh user data
+  Future<void> refreshUser() async {
+    if (_user != null) {
+      await _getUserProfile();
+    }
+  }
+
+  // Clear error message
+  void clearError() {
+    _setError(null);
   }
 }

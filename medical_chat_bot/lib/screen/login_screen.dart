@@ -360,7 +360,10 @@ class _AuthScreenState extends State<AuthScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Login successful!',
-                  style: TextStyle(color: Colors.black, fontSize: 16),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ), // Fixed color
                 ),
               ],
             ),
@@ -397,11 +400,17 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 8),
-                Text('Registration successful! Please login.'),
+                Text(
+                  'Sign up successful!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ), // Fixed color
+                ),
               ],
             ),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

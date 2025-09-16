@@ -33,7 +33,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     _thinkingAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 50),
+      duration: Duration(milliseconds: 1500),
     )..repeat();
     _thinkingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -924,7 +924,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       return Row(
                         mainAxisSize: MainAxisSize.min,
                         children: List.generate(3, (index) {
-                          final delay = index * 0.2;
+                          final delay = index * 0.5;
                           final animationValue =
                               (_thinkingAnimation.value - delay).clamp(
                                 0.0,

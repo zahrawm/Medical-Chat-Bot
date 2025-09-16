@@ -14,18 +14,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
+    _initializeAuth();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AuthProvider>(context, listen: false).loadSavedToken();
-    });
+  Future<void> _initializeAuth() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.loadSavedToken();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        // Show loading while checking auth status
-        if (authProvider.isLoading) {
+        // Show loading only during initial setup using AuthProvider's isInitialized
+        if (!authProvider.isInitialized) {
           return Scaffold(
             body: Container(
               decoration: BoxDecoration(
@@ -39,7 +41,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Add your app logo if you have one
                     Container(
                       padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -85,7 +86,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        // Show auth screen for non-authenticated users
+        // Show login screen for non-authenticated users
         return AuthScreen();
       },
     );

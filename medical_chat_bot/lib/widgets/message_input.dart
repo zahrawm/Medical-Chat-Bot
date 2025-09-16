@@ -27,10 +27,12 @@ class _MessageBubbleState extends State<MessageBubble>
     final fullText = widget.message.content;
 
     _typewriterController = AnimationController(
-      duration: Duration(milliseconds: fullText.length * 30 + 200),
+      duration: Duration(
+        milliseconds:
+            fullText.length * 3 + 100, // Changed from 8 to 3, and 200 to 100
+      ),
       vsync: this,
     );
-
     _fadeController = AnimationController(
       duration: Duration(milliseconds: 50),
       vsync: this,
@@ -196,12 +198,12 @@ class _MessageBubbleState extends State<MessageBubble>
                                   : 0.0;
                               return AnimatedOpacity(
                                 opacity: cursorOpacity,
-                                duration: Duration(milliseconds: 100),
+                                duration: Duration(milliseconds: 50),
                                 child: Container(
                                   margin: EdgeInsets.only(left: 2),
                                   width: 2,
                                   height: 16,
-                                  color: Colors.green.shade600,
+                                  color: const Color.fromARGB(255, 10, 65, 12),
                                 ),
                               );
                             },
