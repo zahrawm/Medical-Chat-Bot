@@ -43,42 +43,19 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
 
     // Load conversation history from backend after the widget is built
+    // BUT DO NOT auto-load any conversation - let user choose
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
-      // Always refresh history from backend when screen loads
+      // Only refresh history from backend - don't auto-load conversations
       chatProvider
           .refreshConversationHistory()
           .then((_) {
-            // Only auto-load the most recent conversation if:
-            // 1. There's conversation history
-            // 2. No current conversation is loaded
-            // 3. Current messages are empty
-            // 4. User is logged in
-            if (chatProvider.conversationHistory.isNotEmpty &&
-                chatProvider.messages.isEmpty &&
-                chatProvider.currentConversationId == null &&
-                chatProvider.accessToken != null) {
-              final mostRecentConversation =
-                  chatProvider.conversationHistory.first;
-              print(
-                'Auto-loading most recent conversation: ${mostRecentConversation.id}',
-              );
-
-              chatProvider
-                  .loadConversation(mostRecentConversation.id)
-                  .then((_) {
-                    // Scroll to bottom after loading messages
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollToBottom();
-                    });
-                  })
-                  .catchError((error) {
-                    print('Error loading most recent conversation: $error');
-                    // Don't show error to user here, just continue with empty state
-                    // The conversation will still be available in the history drawer
-                  });
-            }
+            print(
+              'Conversation history loaded: ${chatProvider.conversationHistory.length} conversations',
+            );
+            // DO NOT auto-load any conversation here
+            // Let the user start fresh or manually select from history
           })
           .catchError((error) {
             print('Error refreshing conversation history: $error');
