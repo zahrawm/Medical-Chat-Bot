@@ -848,6 +848,7 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  // FIXED: Single sendMessage method that handles both new and existing conversations
   Future<void> sendMessage(String message) async {
     if (_disposed) return;
 
@@ -868,12 +869,26 @@ class ChatProvider with ChangeNotifier {
 
       if (_currentThreadId == null) {
         // Start new conversation
+        print(
+          'Starting new conversation with first message: ${message.substring(0, message.length > 20 ? 20 : message.length)}...',
+        );
+
         response = await _apiService.startConversation(message);
         _currentThreadId = response['thread_id'];
 
-        // Create new conversation history entry
+        // FIXED: Generate conversation ID only AFTER successful API call
+        final newConversationId = DateTime.now().millisecondsSinceEpoch
+            .toString();
+        _currentConversationId = newConversationId;
+
+        // Create new conversation history entry AFTER successful response
         await _createNewConversation(message);
+
+        print(
+          'Successfully created new conversation with ID: $newConversationId and thread_id: $_currentThreadId',
+        );
       } else {
+        // Continue existing conversation
         response = await _apiService.continueConversation(
           _currentThreadId!,
           message,
@@ -908,7 +923,10 @@ class ChatProvider with ChangeNotifier {
           _setTyping(false);
         }
       });
+
+      print('Message sent successfully. Total messages: ${_messages.length}');
     } catch (e) {
+      print('Error sending message: $e');
       _setError(e.toString());
       _setLoading(false);
       _setTyping(false);
@@ -977,54 +995,42 @@ class ChatProvider with ChangeNotifier {
     await clearCurrentConversation();
   }
 
-  // FIXED: Start a new conversation with proper conversation ID generation
+  // FIXED: Start a new conversation without creating placeholder entries
   Future<void> startNewConversation() async {
     if (_disposed) return;
 
     try {
+      print('Starting new conversation...');
+
       // Save current conversation if it exists and has messages
       if (_currentConversationId != null && _messages.isNotEmpty) {
         await _saveCurrentConversation();
+        print('Saved current conversation before starting new one');
       }
 
-      // CRITICAL FIX: Generate a new conversation ID immediately
-      // This prevents null errors when navigating to ChatDetailsScreen
-      final newConversationId = 'new_${DateTime.now().millisecondsSinceEpoch}';
-
-      // Clear all state and set new conversation ID
+      // FIXED: Clear all state without creating placeholder conversation
       _messages.clear();
       _currentThreadId = null;
-      _currentConversationId = newConversationId;
+      _currentConversationId =
+          null; // Don't set a new ID yet - wait for first message
       _error = null;
       _isLoading = false;
       _isTyping = false;
       _isLoadingConversation = false;
 
-      // Create a placeholder conversation entry
-      final placeholderConversation = ConversationHistory(
-        id: newConversationId,
-        title: 'New Conversation',
-        lastMessage: 'Start typing to begin...',
-        timestamp: DateTime.now(),
-        messageCount: 0,
-        threadId: null, // Will be set when first message is sent
-      );
-
-      // Add to history at the top
-      _conversationHistory.insert(0, placeholderConversation);
+      // Don't add any placeholder conversation to history
+      // The conversation will be created when the user sends the first message
 
       // Always notify listeners when starting new conversation
       notifyListeners();
 
-      print('Started new conversation with ID: $newConversationId');
+      print('Successfully started new conversation - ready for first message');
     } catch (e) {
       print('Error starting new conversation: $e');
-      // Force clear state even if save fails, but still generate ID
-      final fallbackId = 'fallback_${DateTime.now().millisecondsSinceEpoch}';
-
+      // Force clear state even if save fails
       _messages.clear();
       _currentThreadId = null;
-      _currentConversationId = fallbackId;
+      _currentConversationId = null;
       _error = null;
       _isLoading = false;
       _isTyping = false;
@@ -1032,7 +1038,6 @@ class ChatProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  // Add this method to your ChatProvider class
 
   // FIXED: Load conversation silently without triggering typing animation
   Future<void> loadConversationSilently(String conversationId) async {

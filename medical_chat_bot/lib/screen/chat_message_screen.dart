@@ -26,8 +26,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     "Should I eat 3x per day to maintain consistent blood sugar",
   ];
 
-  // Replace your initState method in ChatScreen with this fixed version:
-
   @override
   void initState() {
     super.initState();
@@ -42,24 +40,18 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       ),
     );
 
-    // Load conversation history from backend after the widget is built
-    // BUT DO NOT auto-load any conversation - let user choose
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
-      // Only refresh history from backend - don't auto-load conversations
       chatProvider
           .refreshConversationHistory()
           .then((_) {
             print(
               'Conversation history loaded: ${chatProvider.conversationHistory.length} conversations',
             );
-            // DO NOT auto-load any conversation here
-            // Let the user start fresh or manually select from history
           })
           .catchError((error) {
             print('Error refreshing conversation history: $error');
-            // Show error if completely unable to load history
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -127,7 +119,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Image.asset('assets/logo.png', fit: BoxFit.cover),
             ),
           ),
-
           SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -153,7 +144,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ],
       ),
       actions: [
-        // Profile Button
         Consumer<AuthProvider>(
           builder: (context, authProvider, child) {
             return Padding(
@@ -195,13 +185,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             );
           },
         ),
-
         Padding(
           padding: EdgeInsets.only(right: 4),
           child: IconButton(
             icon: Icon(Icons.history, size: 22),
             onPressed: () {
-              // Refresh conversation history from backend before opening drawer
               final chatProvider = Provider.of<ChatProvider>(
                 context,
                 listen: false,
@@ -214,8 +202,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             constraints: BoxConstraints(minWidth: 40, minHeight: 40),
           ),
         ),
-
-        // Menu Button
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, size: 22),
           padding: EdgeInsets.all(4),
@@ -240,7 +226,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-
             PopupMenuItem(
               value: 'logout',
               child: Row(
@@ -264,16 +249,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         children: [
           Container(
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: Color(000000),
-            ), // Professional grey
+            decoration: BoxDecoration(color: Color(000000)),
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(16), //
-
+                padding: EdgeInsets.all(16),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .center, // Center align for better side-by-side look
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircleAvatar(
                       radius: 30,
@@ -281,19 +262,21 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       child: ClipOval(
                         child: Image.asset(
                           'assets/logo.png',
-                          width: 20,
-                          height: 20,
+                          width: 40,
+                          height: 40,
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
-
-                    Text(
-                      'Iris Metabolic Health Coach',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black, // White text on grey background
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Iris Metabolic Health Coach',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ],
@@ -302,8 +285,52 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
+          // In your ChatScreen's _buildHistoryDrawer method, replace the "New Chat" button section with this:
+
+          // New Chat Button Section
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close drawer first
+
+                  final chatProvider = Provider.of<ChatProvider>(
+                    context,
+                    listen: false,
+                  );
+
+                  // FIXED: Clear current conversation properly without navigation
+                  chatProvider.startNewConversation();
+
+                  // No navigation needed - we're already in ChatScreen
+                  // The UI will automatically update through the Consumer<ChatProvider>
+                },
+                icon: Icon(Icons.add, color: Colors.white, size: 18),
+                label: Text(
+                  'New Chat',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF4BB543),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  elevation: 2,
+                ),
+              ),
+            ),
+          ),
+
+          // Recent Chats Header
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -317,7 +344,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // E
+          // Chat History List
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
@@ -329,7 +356,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         CircularProgressIndicator(
                           color: const Color.fromARGB(255, 160, 174, 161),
                         ),
-
+                        SizedBox(height: 8),
                         Text(
                           'Loading conversations...',
                           style: TextStyle(
@@ -354,7 +381,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             fontSize: 16,
                           ),
                         ),
-
+                        SizedBox(height: 4),
                         Text(
                           'Start chatting to see your history here',
                           style: TextStyle(
@@ -383,8 +410,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           conversation.id == chatProvider.currentConversationId;
 
                       return Container(
-                        margin: EdgeInsets.symmetric(vertical: 2),
+                        margin: EdgeInsets.symmetric(
+                          vertical: 2,
+                          horizontal: 4,
+                        ),
                         child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                           title: Text(
                             conversation.title,
                             style: TextStyle(
@@ -399,18 +433,18 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    size: 12,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
+                          subtitle: Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  size: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                                SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
                                     chatProvider.getConversationPreview(
                                       conversation,
                                     ),
@@ -419,31 +453,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                       fontSize: 11,
                                     ),
                                   ),
-                                  if (chatProvider.isSyncingWithBackend) ...[
-                                    SizedBox(width: 8),
-                                    SizedBox(
-                                      width: 10,
-                                      height: 10,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 1,
-                                        color: Colors.green.shade400,
-                                      ),
+                                ),
+                                if (chatProvider.isSyncingWithBackend) ...[
+                                  SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 10,
+                                    height: 10,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1,
+                                      color: Colors.green.shade400,
                                     ),
-                                  ],
+                                  ),
                                 ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-
-                          // Replace your ListTile onTap handler in the history drawer with this safer version:
-                          // Replace your ListTile onTap handler in the history drawer with this:
                           onTap: chatProvider.isLoadingConversation
                               ? null
                               : () async {
-                                  // await chatProvider!.loadConversation(
-                                  //   conversation.id.toString(),
-                                  // );
-
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -453,217 +480,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                     ),
                                   );
                                 },
-
-                          // : () async {
-                          //     // Close drawer first
-                          //     Navigator.of(context).pop();
-                          //
-                          //     try {
-                          //       // Validate conversation data
-                          //       if (conversation.id.isEmpty) {
-                          //         if (mounted) {
-                          //           ScaffoldMessenger.of(
-                          //             context,
-                          //           ).showSnackBar(
-                          //             SnackBar(
-                          //               content: Text(
-                          //                 'Invalid conversation: missing ID',
-                          //               ),
-                          //               backgroundColor:
-                          //                   Colors.red.shade600,
-                          //               duration: Duration(seconds: 2),
-                          //             ),
-                          //           );
-                          //         }
-                          //         return;
-                          //       }
-                          //
-                          //       // Don't reload if it's already the current conversation
-                          //       if (conversation.id == chatProvider.currentConversationId) {
-                          //         // Just scroll to bottom if messages exist
-                          //         if (chatProvider.messages.isNotEmpty) {
-                          //           WidgetsBinding.instance
-                          //               .addPostFrameCallback((_) {
-                          //                 _scrollToBottom();
-                          //               });
-                          //         }
-                          //         return;
-                          //       }
-                          //
-                          //       // Show loading feedback
-                          //       if (mounted) {
-                          //         ScaffoldMessenger.of(
-                          //           context,
-                          //         ).showSnackBar(
-                          //           SnackBar(
-                          //             content: Row(
-                          //               children: [
-                          //                 SizedBox(
-                          //                   width: 16,
-                          //                   height: 16,
-                          //                   child:
-                          //                       CircularProgressIndicator(
-                          //                         strokeWidth: 2,
-                          //                         color: Colors.white,
-                          //                       ),
-                          //                 ),
-                          //                 SizedBox(width: 12),
-                          //                 Expanded(
-                          //                   child: Text(
-                          //                     'Loading "${conversation.title.length > 30 ? conversation.title.substring(0, 30) + '...' : conversation.title}"',
-                          //                   ),
-                          //                 ),
-                          //               ],
-                          //             ),
-                          //             backgroundColor: Colors.blue.shade600,
-                          //             duration: Duration(seconds: 2),
-                          //           ),
-                          //         );
-                          //       }
-                          //
-                          //       // Load the conversation
-                          //       // await chatProvider.loadConversation(
-                          //       //   conversation.id,
-                          //       // );
-                          //
-                          //       Navigator.push(context, MaterialPageRoute(builder: (context)=>ChatScreen()));
-                          //
-                          //
-                          //       // Clear loading snackbar
-                          //       if (mounted) {
-                          //         ScaffoldMessenger.of(
-                          //           context,
-                          //         ).hideCurrentSnackBar();
-                          //       }
-                          //
-                          //       // Show result feedback
-                          //       if (chatProvider.messages.isNotEmpty) {
-                          //         if (mounted) {
-                          //           ScaffoldMessenger.of(
-                          //             context,
-                          //           ).showSnackBar(
-                          //             SnackBar(
-                          //               content: Text(
-                          //                 'Loaded ${chatProvider.messages.length} messages',
-                          //               ),
-                          //               backgroundColor:
-                          //                   Colors.green.shade600,
-                          //               duration: Duration(seconds: 1),
-                          //             ),
-                          //           );
-                          //         }
-                          //
-                          //         // Scroll to bottom after loading
-                          //         WidgetsBinding.instance
-                          //             .addPostFrameCallback((_) {
-                          //               _scrollToBottom();
-                          //             });
-                          //       } else {
-                          //         // Conversation loaded but empty - this is OK, don't show as error
-                          //         if (mounted) {
-                          //           ScaffoldMessenger.of(
-                          //             context,
-                          //           ).showSnackBar(
-                          //             SnackBar(
-                          //               content: Text(
-                          //                 'This conversation is empty. Start chatting!',
-                          //               ),
-                          //               backgroundColor:
-                          //                   Colors.blue.shade600,
-                          //               duration: Duration(seconds: 2),
-                          //             ),
-                          //           );
-                          //         }
-                          //       }
-                          //     } catch (e) {
-                          //       print('Error loading conversation: $e');
-                          //
-                          //       // Clear loading snackbar
-                          //       if (mounted) {
-                          //         ScaffoldMessenger.of(
-                          //           context,
-                          //         ).hideCurrentSnackBar();
-                          //       }
-                          //
-                          //       // Show error with retry option
-                          //       if (mounted) {
-                          //         ScaffoldMessenger.of(
-                          //           context,
-                          //         ).showSnackBar(
-                          //           SnackBar(
-                          //             content: Column(
-                          //               mainAxisSize: MainAxisSize.min,
-                          //               crossAxisAlignment:
-                          //                   CrossAxisAlignment.start,
-                          //               children: [
-                          //                 Text(
-                          //                   'Failed to load conversation',
-                          //                 ),
-                          //                 if (e.toString().isNotEmpty)
-                          //                   Text(
-                          //                     e.toString().length > 60
-                          //                         ? '${e.toString().substring(0, 60)}...'
-                          //                         : e.toString(),
-                          //                     style: TextStyle(
-                          //                       fontSize: 12,
-                          //                       color: Colors.white70,
-                          //                     ),
-                          //                   ),
-                          //               ],
-                          //             ),
-                          //             backgroundColor: Colors.red.shade600,
-                          //             duration: Duration(seconds: 4),
-                          //             action: SnackBarAction(
-                          //               label: 'RETRY',
-                          //               textColor: Colors.white,
-                          //               onPressed: () async {
-                          //                 try {
-                          //                   await chatProvider
-                          //                       .loadConversation(
-                          //                         conversation.id,
-                          //                       );
-                          //                   if (chatProvider
-                          //                       .messages
-                          //                       .isNotEmpty) {
-                          //                     ScaffoldMessenger.of(
-                          //                       context,
-                          //                     ).showSnackBar(
-                          //                       SnackBar(
-                          //                         content: Text(
-                          //                           'Successfully loaded conversation',
-                          //                         ),
-                          //                         backgroundColor:
-                          //                             Colors.green.shade600,
-                          //                         duration: Duration(
-                          //                           seconds: 1,
-                          //                         ),
-                          //                       ),
-                          //                     );
-                          //                     _scrollToBottom();
-                          //                   }
-                          //                 } catch (retryError) {
-                          //                   ScaffoldMessenger.of(
-                          //                     context,
-                          //                   ).showSnackBar(
-                          //                     SnackBar(
-                          //                       content: Text(
-                          //                         'Retry failed. Please try again later.',
-                          //                       ),
-                          //                       backgroundColor:
-                          //                           Colors.red.shade600,
-                          //                       duration: Duration(
-                          //                         seconds: 2,
-                          //                       ),
-                          //                     ),
-                          //                   );
-                          //                 }
-                          //               },
-                          //             ),
-                          //           ),
-                          //         );
-                          //       }
-                          //     }
-                          //   },
                           trailing:
                               chatProvider.isLoadingConversation &&
                                   isCurrentConversation
@@ -684,8 +500,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               },
             ),
           ),
+
+          // Bottom section
           Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.grey.shade200)),
             ),
@@ -731,7 +549,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               color: Colors.black87,
             ),
           ),
-
           Text(
             'How can I help you today',
             style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
@@ -827,7 +644,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
-
       itemCount:
           chatProvider.messages.length + (chatProvider.isLoading ? 1 : 0),
       itemBuilder: (context, index) {

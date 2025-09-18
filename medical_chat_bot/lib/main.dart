@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:medical_chat_bot/provider/auth_provider.dart' show AuthProvider;
-
+import 'package:medical_chat_bot/provider/auth_provider.dart';
+import 'package:medical_chat_bot/provider/chat_provider.dart';
+import 'package:medical_chat_bot/service/api_service.dart';
 import 'package:medical_chat_bot/service/auth_wrapper.dart';
-
 import 'package:provider/provider.dart';
 
 main() {
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        //ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider(ApiService())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
