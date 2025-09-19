@@ -215,17 +215,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             }
           },
           itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'new',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: Colors.green.shade600, size: 20),
-                  SizedBox(width: 8),
-                  Text('New Chat', style: TextStyle(fontSize: 14)),
-                ],
-              ),
-            ),
+            
             PopupMenuItem(
               value: 'logout',
               child: Row(
