@@ -1361,6 +1361,78 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Add these methods to the ChatProvider class
+
+  Map<String, List<ConversationHistory>> groupConversationsByTime() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(Duration(days: 1));
+    final sevenDaysAgo = today.subtract(Duration(days: 7));
+    final thirtyDaysAgo = today.subtract(Duration(days: 30));
+
+    final grouped = <String, List<ConversationHistory>>{
+      'Today': [],
+      'Yesterday': [],
+      'Previous 7 days': [],
+      'Previous 30 days': [],
+      'Older': [],
+    };
+
+    for (final conversation in _conversationHistory) {
+      final conversationDate = conversation.timestamp;
+      final conversationDay = DateTime(conversationDate.year, conversationDate.month, conversationDate.day);
+
+      if (conversationDay == today) {
+        grouped['Today']!.add(conversation);
+      } else if (conversationDay == yesterday) {
+        grouped['Yesterday']!.add(conversation);
+      } else if (conversationDay.isAfter(sevenDaysAgo)) {
+        grouped['Previous 7 days']!.add(conversation);
+      } else if (conversationDay.isAfter(thirtyDaysAgo)) {
+        grouped['Previous 30 days']!.add(conversation);
+      } else {
+        grouped['Older']!.add(conversation);
+      }
+    }
+
+    // Remove empty sections
+    grouped.removeWhere((key, value) => value.isEmpty);
+
+    return grouped;
+  }
+
+  int getGroupedConversationCount(Map<String, List<ConversationHistory>> groupedConversations) {
+    int count = 0;
+    groupedConversations.forEach((section, conversations) {
+      count += conversations.length + 1; // +1 for section header
+    });
+    return count;
+  }
+
+  (String, int) getItemPosition(int index, Map<String, List<ConversationHistory>> groupedConversations) {
+    int currentIndex = 0;
+    final sections = groupedConversations.keys.toList();
+
+    for (final section in sections) {
+      final conversations = groupedConversations[section]!;
+
+      // Check if this index is the section header
+      if (index == currentIndex) {
+        return (section, -1);
+      }
+      currentIndex++;
+
+      // Check if this index is within the conversations of this section
+      for (int i = 0; i < conversations.length; i++) {
+        if (index == currentIndex) {
+          return (section, i);
+        }
+        currentIndex++;
+      }
+    }
+
+    return ('', -1); // Should never reach here
+  }
   @override
   void dispose() {
     _disposed = true;

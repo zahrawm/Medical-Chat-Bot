@@ -278,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Icons.person_outline,
                       enabled: _isEditing,
                     ),
-
+                    SizedBox(height: 16),
                     // Email
                     _buildProfileField(
                       'Email',

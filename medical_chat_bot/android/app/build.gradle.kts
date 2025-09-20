@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.medical_chat_bot"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "25.1.8937393"  // Fixed: Added = sign
+    ndkVersion = "27.0.12077973"  // Fixed: Added = sign
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

@@ -26,6 +26,25 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     "Should I eat 3x per day to maintain consistent blood sugar",
   ];
 
+  final List<Feature> _features = [
+    Feature(
+      emoji: "🎯",
+      title: "Personalized Coaching",
+      text:
+          "Get tailored advice based on your unique metabolic profile and goals.",
+    ),
+    Feature(
+      emoji: "🍎",
+      title: "Nutrition Analysis",
+      text:
+          "Analyze your meals and get instant feedback on nutritional content.",
+    ),
+    Feature(
+      emoji: "📊",
+      title: "Progress Tracking",
+      text: "Monitor your health journey with detailed insights and analytics.",
+    ),
+  ];
   @override
   void initState() {
     super.initState();
@@ -111,13 +130,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       title: Row(
         children: [
           Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+            padding: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withAlpha(51),
+              shape: BoxShape.circle,
             ),
+            child: Image.asset('assets/logo.png', height: 20, width: 20),
           ),
           SizedBox(width: 12),
           Expanded(
@@ -134,7 +152,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 Text(
-                  'Your Medical Assistant',
+                  'Metabolic Health Coach',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -143,93 +161,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      actions: [
-        Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            return Padding(
-              padding: EdgeInsets.only(right: 4),
-              child: IconButton(
-                icon: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF4BB543), Color(0xFF388E3C)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getProfileInitials(authProvider),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()),
-                  );
-                },
-                tooltip: 'Profile',
-                padding: EdgeInsets.all(4),
-                constraints: BoxConstraints(minWidth: 40, minHeight: 40),
-              ),
-            );
-          },
-        ),
-        Padding(
-          padding: EdgeInsets.only(right: 4),
-          child: IconButton(
-            icon: Icon(Icons.history, size: 22),
-            onPressed: () {
-              final chatProvider = Provider.of<ChatProvider>(
-                context,
-                listen: false,
-              );
-              chatProvider.refreshConversationHistory();
-              _scaffoldKey.currentState?.openDrawer();
-            },
-            tooltip: 'History',
-            padding: EdgeInsets.all(4),
-            constraints: BoxConstraints(minWidth: 40, minHeight: 40),
-          ),
-        ),
-        PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, size: 22),
-          padding: EdgeInsets.all(4),
-          onSelected: (value) {
-            if (value == 'clear') {
-              _showClearConfirmation();
-            } else if (value == 'logout') {
-              _showLogoutConfirmation();
-            } else if (value == 'new') {
-              _startNewConversation();
-            }
-          },
-          itemBuilder: (context) => [
-            
-            PopupMenuItem(
-              value: 'logout',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.logout, color: Colors.grey.shade600, size: 20),
-                  SizedBox(width: 8),
-                  Text('Logout', style: TextStyle(fontSize: 14)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -246,18 +177,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/logo.png',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
+                    Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent.withAlpha(51),
+                          shape: BoxShape.circle,
                         ),
-                      ),
-                    ),
+                        child: Image.asset('assets/logo.png', height: 40, width: 40)),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -326,7 +252,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Text(
                 'Recent Chats',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey,
                 ),
@@ -384,31 +310,32 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   );
                 }
 
+                final groupedConversations = chatProvider.groupConversationsByTime();
+
                 return RefreshIndicator(
                   onRefresh: () async {
                     await chatProvider.refreshConversationHistory();
                   },
                   color: Colors.green.shade600,
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     physics: AlwaysScrollableScrollPhysics(),
-                    itemCount: chatProvider.conversationHistory.length,
+                    itemCount: chatProvider.getGroupedConversationCount(groupedConversations),
                     itemBuilder: (context, index) {
-                      final conversation =
-                          chatProvider.conversationHistory[index];
-                      final isCurrentConversation =
-                          conversation.id == chatProvider.currentConversationId;
+                      final (section, itemIndex) = chatProvider.getItemPosition(index, groupedConversations);
+
+                      if (itemIndex == -1) {
+                        return _buildSectionHeader(section);
+                      }
+
+                      final conversation = groupedConversations[section]![itemIndex];
+                      final isCurrentConversation = conversation.id == chatProvider.currentConversationId;
 
                       return Container(
-                        margin: EdgeInsets.symmetric(
-                          vertical: 2,
-                          horizontal: 4,
-                        ),
                         child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 6),
+                          minVerticalPadding: 0,
+                          visualDensity: VisualDensity.compact,
                           title: Text(
                             conversation.title,
                             style: TextStyle(
@@ -423,64 +350,28 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Padding(
-                            padding: EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.access_time,
-                                  size: 12,
-                                  color: Colors.grey.shade500,
-                                ),
-                                SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    chatProvider.getConversationPreview(
-                                      conversation,
-                                    ),
-                                    style: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                                if (chatProvider.isSyncingWithBackend) ...[
-                                  SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 10,
-                                    height: 10,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1,
-                                      color: Colors.green.shade400,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
                           onTap: chatProvider.isLoadingConversation
                               ? null
                               : () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ChatDetailsScreen(
-                                        conversationID: conversation.threadId,
-                                      ),
-                                    ),
-                                  );
-                                },
-                          trailing:
-                              chatProvider.isLoadingConversation &&
-                                  isCurrentConversation
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatDetailsScreen(
+                                  conversationID: conversation.threadId,
+                                ),
+                              ),
+                            );
+                          },
+                          trailing: chatProvider.isLoadingConversation &&
+                              isCurrentConversation
                               ? SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.green.shade600,
-                                  ),
-                                )
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.green.shade600,
+                            ),
+                          )
                               : null,
                         ),
                       );
@@ -496,6 +387,99 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.grey.shade200)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF4BB543), Color(0xFF388E3C)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(color: Colors.white, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _getProfileInitials(authProvider),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ProfileScreen()),
+                              );
+                            },
+                            tooltip: 'Profile',
+                            padding: EdgeInsets.all(4),
+                            constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text(
+                                  authProvider.user?.firstName ?? '',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              Text(
+                                  'User'
+                              )
+                              ]
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.settings_outlined, size: 22),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ProfileScreen()),
+                        );                        },
+                      tooltip: 'Profile',
+                      padding: EdgeInsets.all(4),
+                      constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child: IconButton(
+                        icon: Icon(Icons.logout, size: 22),
+                        onPressed: () {
+                          _showLogoutConfirmation();
+                        },
+                        tooltip: 'Logout',
+                        padding: EdgeInsets.all(4),
+                        constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -515,7 +499,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       padding: EdgeInsets.all(20),
       child: Column(
         children: [
-          SizedBox(height: 40),
+          SizedBox(height: 20),
           Container(
             width: 40,
             height: 40,
@@ -532,7 +516,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
           SizedBox(height: 20),
           Text(
-            'Hello! I\'m IRIS',
+            'How can I help you today?',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -540,11 +525,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
           Text(
-            'How can I help you today',
+            textAlign: TextAlign.center,
+            'Your AI metabolic health coach is ready to provide personalized guidance for your wellness journey.',
             style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
           ),
-          SizedBox(height: 32),
-          if (_showQuickQuestions) _buildQuickQuestions(),
+
+          SizedBox(height: 10),
+          _buildFeatures(),
+
+          SizedBox(height: 10),
+           _buildQuickQuestions(),
         ],
       ),
     );
@@ -575,58 +565,127 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        SizedBox(height: 16),
-        Column(
-          children: _quickQuestions.map((question) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () => _sendQuickQuestion(question),
-                child: Card(
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Color(000000)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.arrow_forward,
-                          color: Color((0xFF4BB543)),
-                          size: 16,
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            question,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+        if (_showQuickQuestions)...[
+          SizedBox(height: 8),
+          Column(
+            children: _quickQuestions.map((question) {
+              return Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: InkWell(
+                  onTap: () => _sendQuickQuestion(question),
+                  child: Card(
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Color(000000)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(13),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
                           ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_forward,
+                            color: Color((0xFF4BB543)),
+                            size: 16,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              question,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ]
+      ],
+    );
+  }
+
+  Widget _buildFeatures() {
+    return Column(
+      children: _features.map((feature) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 5),
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Color(0xFF000000).withAlpha(26)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(27),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(feature.emoji, style: TextStyle(fontSize: 24)),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          feature.title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          feature.text,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
-            );
-          }).toList(),
-        ),
-      ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -683,7 +742,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 4,
                     offset: Offset(0, 2),
                   ),
@@ -749,7 +808,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(27),
             blurRadius: 10,
             offset: Offset(0, -2),
           ),
@@ -1083,7 +1142,7 @@ class ChatBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.green.withOpacity(0.02)
+      ..color = Colors.green.withAlpha(5)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 
@@ -1100,4 +1159,24 @@ class ChatBackgroundPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class Feature {
+  final String emoji;
+  final String title;
+  final String text;
+
+  Feature({required this.emoji, required this.title, required this.text});
+}
+
+Widget _buildSectionHeader(String section) {
+  return Text(
+    section,
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 14,
+      decoration: TextDecoration.underline,
+      color: Colors.grey.shade700,
+    ),
+  );
 }

@@ -1,6 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:medical_chat_bot/provider/auth_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../widgets/button.dart';
+import '../widgets/custom_text_field.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -21,6 +25,98 @@ class _AuthScreenState extends State<AuthScreen> {
   final _yearController = TextEditingController();
 
   bool _isPasswordVisible = false;
+  bool _isFormValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Add listeners to all text controllers to check form validity
+    _addTextControllerListeners();
+  }
+
+  @override
+  void dispose() {
+    // Remove listeners to prevent memory leaks
+    _removeTextControllerListeners();
+    super.dispose();
+  }
+
+  void _addTextControllerListeners() {
+    final controllers = [
+      _emailController,
+      _passwordController,
+      if (!_isLoginMode) ...[
+        _usernameController,
+        _firstNameController,
+        _lastNameController,
+        _dayController,
+        _monthController,
+        _yearController,
+      ],
+    ];
+
+    for (final controller in controllers) {
+      controller.addListener(_checkFormValidity);
+    }
+  }
+
+  void _removeTextControllerListeners() {
+    final controllers = [
+      _emailController,
+      _passwordController,
+      _usernameController,
+      _firstNameController,
+      _lastNameController,
+      _dayController,
+      _monthController,
+      _yearController,
+    ];
+
+    for (final controller in controllers) {
+      controller.removeListener(_checkFormValidity);
+    }
+  }
+
+  void _checkFormValidity() {
+    final isValid = _validateForm();
+    if (_isFormValid != isValid) {
+      setState(() {
+        _isFormValid = isValid;
+      });
+    }
+  }
+
+  bool _validateForm() {
+    // Basic validation - check if required fields are not empty
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      return false;
+    }
+
+    if (!_isLoginMode) {
+      if (_usernameController.text.isEmpty ||
+          _firstNameController.text.isEmpty ||
+          _lastNameController.text.isEmpty ||
+          _dayController.text.isEmpty ||
+          _monthController.text.isEmpty ||
+          _yearController.text.isEmpty) {
+        return false;
+      }
+
+      // Additional validation for date fields
+      final month = int.tryParse(_monthController.text);
+      final day = int.tryParse(_dayController.text);
+      final year = int.tryParse(_yearController.text);
+
+      if (month == null || month < 1 || month > 12) return false;
+      if (day == null || day < 1 || day > 31) return false;
+      if (year == null || year < 1900 || year > DateTime.now().year) return false;
+    }
+
+    // Email format validation
+    if (!_emailController.text.contains('@')) return false;
+
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,307 +126,279 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: EdgeInsets.all(24),
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset('assets/logo.png', height: 60, width: 60),
-                      SizedBox(height: 8),
-                      Text(
-                        _isLoginMode ? 'Welcome back' : 'Create account',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent.withAlpha(51),
+                        shape: BoxShape.circle,
                       ),
-                      SizedBox(height: 32),
+                      child: Image.asset('assets/logo.png', height: 50, width: 50)),
+                  SizedBox(height: 24),
+                  Text(
+                    _isLoginMode ? 'Welcome back' : 'Create account',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
 
-                      if (!_isLoginMode) ...[
-                        SizedBox(height: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: _isLoginMode
+                              ? 'Don\'t have an account? '
+                              : 'Already have an account? ',
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                        TextSpan(
+                          text: _isLoginMode ? 'Sign up' : 'Sign in',
+                          style: TextStyle(
+                            color: Colors.green,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              setState(() {
+                                _isLoginMode = !_isLoginMode;
+                                _isFormValid = false;
+                              });
+                              _formKey.currentState?.reset();
+                              // Update listeners when mode changes
+                              _removeTextControllerListeners();
+                              _addTextControllerListeners();
+                              _checkFormValidity();
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 40),
+
+                  if (!_isLoginMode) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomInputField(
+                            labelText: 'First Name',
+                            hintText: 'Enter your first name',
+                            controller: _firstNameController,
+                            keyboardType: TextInputType.name,
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                            onChanged: (_) => _checkFormValidity(),
+                          ),
+                        ),
+
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: CustomInputField(
+                            labelText: 'Last Name',
+                            hintText: 'Enter your last name',
+                            controller: _lastNameController,
+                            keyboardType: TextInputType.name,
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                            onChanged: (_) => _checkFormValidity(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    CustomInputField(
+                      labelText: 'Username',
+                      hintText: 'Enter your username',
+                      controller: _usernameController,
+                      keyboardType: TextInputType.text,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Please enter username';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => _checkFormValidity(),
+                    ),
+                    SizedBox(height: 10),
 
                         Row(
                           children: [
                             Expanded(
-                              child: TextFormField(
-                                controller: _firstNameController,
-                                decoration: InputDecoration(
-                                  labelText: 'First Name',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
+                              child: CustomInputField(
+                                labelText: 'Date of birth',
+                                hintText: 'Month',
+                                controller: _monthController,
+                                keyboardType: TextInputType.number,
                                 validator: (value) {
                                   if (value?.isEmpty ?? true) {
-                                    return 'Required';
+                                    return 'Month required';
+                                  }
+                                  final month = int.tryParse(value!);
+                                  if (month == null ||
+                                      month < 1 ||
+                                      month > 12) {
+                                    return 'Invalid month';
                                   }
                                   return null;
                                 },
+                                onChanged: (_) => _checkFormValidity(),
                               ),
                             ),
-                            SizedBox(width: 16),
+                            SizedBox(width: 12),
                             Expanded(
-                              child: TextFormField(
-                                controller: _lastNameController,
-                                decoration: InputDecoration(
-                                  labelText: 'Last Name',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
+                              child: CustomInputField(
+                                labelText: '',
+                                hintText: 'Day',
+                                controller: _dayController,
+                                keyboardType: TextInputType.number,
                                 validator: (value) {
                                   if (value?.isEmpty ?? true) {
-                                    return 'Required';
+                                    return 'Day required';
+                                  }
+                                  final day = int.tryParse(value!);
+                                  if (day == null || day < 1 || day > 31) {
+                                    return 'Invalid day';
                                   }
                                   return null;
                                 },
+                                onChanged: (_) => _checkFormValidity(),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: CustomInputField(
+                                labelText: '',
+                                hintText: 'Year',
+                                controller: _yearController,
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return 'Year required';
+                                  }
+                                  final year = int.tryParse(value!);
+                                  if (year == null ||
+                                      year < 1900 ||
+                                      year > DateTime.now().year) {
+                                    return 'Invalid year';
+                                  }
+                                  return null;
+                                },
+                                onChanged: (_) => _checkFormValidity(),
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Username',
 
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Please enter username';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Date of Birth',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _dayController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Month',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value?.isEmpty ?? true) {
-                                        return 'Month required';
-                                      }
-                                      final month = int.tryParse(value!);
-                                      if (month == null ||
-                                          month < 1 ||
-                                          month > 12) {
-                                        return 'Invalid month';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _monthController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Day',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value?.isEmpty ?? true) {
-                                        return 'Day required';
-                                      }
-                                      final day = int.tryParse(value!);
-                                      if (day == null || day < 1 || day > 31) {
-                                        return 'Invalid day';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _yearController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Year',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value?.isEmpty ?? true) {
-                                        return 'Year required';
-                                      }
-                                      final year = int.tryParse(value!);
-                                      if (year == null ||
-                                          year < 1900 ||
-                                          year > DateTime.now().year) {
-                                        return 'Invalid year';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
-                      ],
+                    SizedBox(height: 16),
+                  ],
 
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'Please enter email';
-                          }
-                          if (!value!.contains('@')) {
-                            return 'Please enter valid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'Please enter password';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 24),
-
-                      Consumer<AuthProvider>(
-                        builder: (context, authProvider, child) {
-                          if (authProvider.error != null) {
-                            return Column(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.shade50,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.red.shade200,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    authProvider.error!,
-                                    style: TextStyle(
-                                      color: Colors.red.shade700,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                              ],
-                            );
-                          }
-                          return SizedBox.shrink();
-                        },
-                      ),
-
-                      Consumer<AuthProvider>(
-                        builder: (context, authProvider, child) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: authProvider.isLoading
-                                  ? null
-                                  : _submitForm,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: authProvider.isLoading
-                                  ? CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : Text(
-                                      _isLoginMode ? 'Login' : 'Register',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          );
-                        },
-                      ),
-                      SizedBox(height: 16),
-
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _isLoginMode = !_isLoginMode;
-                          });
-                          _formKey.currentState?.reset();
-                        },
-                        child: Text(
-                          _isLoginMode
-                              ? 'Don\'t have an account? Register'
-                              : 'Already have an account? Login',
-                        ),
-                      ),
-                    ],
+                  CustomInputField(
+                    labelText: 'Email address',
+                    hintText: 'Enter your email address',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) {
+                        return 'Please enter email';
+                      }
+                      if (!value!.contains('@')) {
+                        return 'Please enter valid email';
+                      }
+                      return null;
+                    },
+                    onChanged: (_) => _checkFormValidity(),
                   ),
-                ),
+
+                  SizedBox(height: 10),
+
+                  CustomInputField(
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    keyboardType: TextInputType.visiblePassword,
+                    suffixIcon: _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) {
+                        return 'Please enter password';
+                      }
+                      return null;
+                    },
+                    onSuffixPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                    onChanged: (_) => _checkFormValidity(),
+                  ),
+                  SizedBox(height: 50),
+
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      if (authProvider.error != null) {
+                        return Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.red.shade200,
+                                ),
+                              ),
+                              child: Text(
+                                authProvider.error!,
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                          ],
+                        );
+                      }
+                      return SizedBox.shrink();
+                    },
+                  ),
+
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return MyButton(
+                        child: authProvider.isLoading
+                            ? CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                            : Text(
+                          _isLoginMode ? 'Sign in' : 'Create account',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        color: Colors.green,
+                        onPressed: (authProvider.isLoading || !_isFormValid)
+                            ? null
+                            : _submitForm,
+                        isEnabled: _isFormValid && !authProvider.isLoading,
+                      );
+                    },
+                  ),
+
+                ],
               ),
             ),
           ),
@@ -363,7 +431,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                  ), // Fixed color
+                  ),
                 ),
               ],
             ),
@@ -376,7 +444,6 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         );
 
-        // Optional: Add a small delay to show the message before navigating
         await Future.delayed(Duration(milliseconds: 500));
       }
     } else {
@@ -387,12 +454,13 @@ class _AuthScreenState extends State<AuthScreen> {
         password: _passwordController.text,
         email: _emailController.text.trim(),
         dob:
-            '${_yearController.text.trim()}-${_monthController.text.trim().padLeft(2, '0')}-${_dayController.text.trim().padLeft(2, '0')}',
+        '${_yearController.text.trim()}-${_monthController.text.trim().padLeft(2, '0')}-${_dayController.text.trim().padLeft(2, '0')}',
       );
 
       if (success) {
         setState(() {
           _isLoginMode = true;
+          _isFormValid = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -405,7 +473,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                  ), // Fixed color
+                  ),
                 ),
               ],
             ),

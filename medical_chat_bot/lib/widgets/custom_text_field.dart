@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomInputField extends StatelessWidget {
+class CustomInputField extends StatefulWidget {
   final String labelText;
   final TextEditingController controller;
   final String? hintText;
@@ -8,8 +8,11 @@ class CustomInputField extends StatelessWidget {
   final bool isRequired;
   final TextInputType keyboardType;
   final Function(String)? onChanged;
-  
-  final dynamic obscureText;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
+  final Function? onSuffixPressed;
+  final bool obscureText;
+  final String? Function(String?)? validator;
 
   const CustomInputField({
     super.key,
@@ -19,9 +22,26 @@ class CustomInputField extends StatelessWidget {
     this.maxLines = 1,
     this.isRequired = false,
     this.keyboardType = TextInputType.text,
-    this.onChanged, required IconData prefixIcon, required String? Function(dynamic value) validator,
-    this. obscureText = false,
+    this.onChanged,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.onSuffixPressed,
+    this.obscureText = false,
+    this.validator,
   });
+
+  @override
+  State<CustomInputField> createState() => _CustomInputFieldState();
+}
+
+class _CustomInputFieldState extends State<CustomInputField> {
+  bool _isObscured = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscured = widget.obscureText;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +58,8 @@ class CustomInputField extends StatelessWidget {
               color: Colors.black87,
             ),
             children: [
-              TextSpan(text: labelText),
-              if (isRequired)
+              TextSpan(text: widget.labelText),
+              if (widget.isRequired)
                 TextSpan(
                   text: ' *',
                   style: TextStyle(color: Colors.red),
@@ -48,33 +68,38 @@ class CustomInputField extends StatelessWidget {
           ),
         ),
         SizedBox(height: screenWidth * 0.02),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          onChanged: onChanged,
+        TextFormField(
+          controller: widget.controller,
+          maxLines: widget.maxLines,
+          keyboardType: widget.keyboardType,
+          onChanged: widget.onChanged,
+          obscureText: _isObscured,
+          validator: widget.validator,
           decoration: InputDecoration(
-            hintText: hintText ?? labelText.toLowerCase(),
+            hintText: widget.hintText ?? widget.labelText.toLowerCase(),
             hintStyle: TextStyle(
               color: Colors.grey[500],
               fontSize: screenWidth * 0.035,
             ),
-            filled: true,
-            fillColor: Color(0xFFF4F4F4),
+            filled: false,
+            prefixIcon: widget.prefixIcon != null
+                ? Icon(widget.prefixIcon, size: screenWidth * 0.05)
+                : null,
+            suffixIcon: _buildSuffixIcon(screenWidth),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(screenWidth * 0.03),
-              borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                borderSide: BorderSide(color: Colors.black, width: 2, style: BorderStyle.solid)
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
               borderSide: BorderSide(
-                color: Color(0xFFFE950B),
+                color: Colors.green,
                 width: 2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(screenWidth * 0.03),
-              borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                borderSide: BorderSide(color: Colors.grey, width: 0.5,)
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -98,5 +123,39 @@ class CustomInputField extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget? _buildSuffixIcon(double screenWidth) {
+    // If obscureText is true, show toggle visibility icon
+    if (widget.obscureText) {
+      return IconButton(
+        icon: Icon(
+          _isObscured ? Icons.visibility_off : Icons.visibility,
+          size: screenWidth * 0.05,
+          color: Colors.grey[600],
+        ),
+        onPressed: () {
+          setState(() {
+            _isObscured = !_isObscured;
+          });
+        },
+      );
+    }
+
+    // If custom suffix icon is provided
+    if (widget.suffixIcon != null) {
+      return IconButton(
+        icon: Icon(
+          widget.suffixIcon,
+          size: screenWidth * 0.05,
+          color: Colors.grey[600],
+        ),
+        onPressed: () {
+          widget.onSuffixPressed?.call();
+        },
+      );
+    }
+
+    return null;
   }
 }
