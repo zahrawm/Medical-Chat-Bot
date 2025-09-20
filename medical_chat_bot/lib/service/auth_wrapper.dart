@@ -26,7 +26,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        // Show loading only during initial setup using AuthProvider's isInitialized
+      
         if (!authProvider.isInitialized) {
           return Scaffold(
             body: Container(

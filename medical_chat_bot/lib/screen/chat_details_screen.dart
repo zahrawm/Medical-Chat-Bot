@@ -12,6 +12,7 @@ import '../provider/chat_provider.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
   final String? conversationID;
+
   const ChatDetailsScreen({super.key, this.conversationID});
 
   @override
@@ -21,11 +22,12 @@ class ChatDetailsScreen extends StatefulWidget {
 class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   static const String baseUrl = 'https://liveapi.tybhealth.com';
 
+  final _messageController = TextEditingController();
   ChatProvider? chatProvider;
   ApiService apiService = ApiService();
   String? _accessToken;
 
-  List<Map<String, dynamic>> messages = [];
+  List  messages = [];
   bool isLoading = true;
   String? conversationTitle;
   String? error;
@@ -234,14 +236,129 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final message = messages[index];
-        return _buildMessageTile(message, index);
-      },
+    // return ListView.builder(
+    //   padding: const EdgeInsets.all(16),
+    //   itemCount: messages.length,
+    //   itemBuilder: (context, index) {
+
+    //},
+    // );
+    // return _buildInputSection();
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            reverse: true,
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final message = messages[index];
+              return _buildMessageTile(message, index);
+            },
+          ),
+        ),
+        _buildInputSection(),
+      ],
     );
+  }
+
+  Widget _buildInputSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Type your message',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: null,
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Consumer<ChatProvider>(
+                builder: (context, chatProvider, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.green.shade400, Colors.green.shade600],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: chatProvider.isLoading ? null : _sendMessage,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          child: Center(
+                            child: chatProvider.isLoading
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _sendMessage() {
+    final chatMessage = _messageController.text.trim();
+    if (chatMessage.isEmpty) return;
+
+    _messageController.clear();
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    messages.add(chatMessage);
+    chatProvider.sendMessage(chatMessage);
+
+    /// _scrollToBottom();
   }
 
   Widget _buildMessageTile(Map<String, dynamic> message, int index) {

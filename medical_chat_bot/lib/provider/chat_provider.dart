@@ -1321,6 +1321,12 @@ class ChatProvider with ChangeNotifier {
     return lastMsg != null && !lastMsg.isUser;
   }
 
+
+ void setCurrentConversationId(String conversationId) {
+  _currentConversationId = conversationId;
+  notifyListeners();
+}
+
   // Reset provider to initial state (useful for logout)
   Future<void> reset() async {
     _messages.clear();
