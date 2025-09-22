@@ -358,6 +358,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               MaterialPageRoute(
                                 builder: (context) => ChatDetailsScreen(
                                   conversationID: conversation.threadId,
+                                  tile: conversation.title,
                                 ),
                               ),
                             );

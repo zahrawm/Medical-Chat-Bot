@@ -1,5 +1,8 @@
+// api_service.dart
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'https://liveapi.tybhealth.com';
@@ -11,33 +14,56 @@ class ApiService {
 
   String? get accessToken => _accessToken;
 
-  Map<String, String> get headers => {
-    'Content-Type': 'application/json',
-    if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
-  };
+  Future<String?> _getAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token');
+  }
 
-  Map<String, String> get formHeaders => {
-    if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
-  };
+  Future<Map<String, String>> get headers async {
+    final token = await _getAccessToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  Future<Map<String, String>> get formHeaders async {
+    final token = await _getAccessToken();
+    return {
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   Future login(String email, String password) async {
+    final url = '$baseUrl/auth/login';
+    final body = {'email': email, 'password': password};
+
     try {
+      log('🚀 Starting login process', name: 'login');
+      log('📤 URL: $url', name: 'login');
+      log('📤 Request body: $body', name: 'login');
+
       final response = await http
           .post(
-            Uri.parse('$baseUrl/auth/login'),
-            headers: formHeaders,
-            body: {'email': email, 'password': password},
-          )
+        Uri.parse(url),
+        headers: await formHeaders,
+        body: body,
+      )
           .timeout(const Duration(seconds: 30));
+
+      log('📥 Response status: ${response.statusCode}', name: 'login');
+      log('📥 Response body: ${response.body}', name: 'login');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        _accessToken = data['access_token'];
+        log('✅ Login successful', name: 'login');
         return data;
       } else {
+        log('❌ Login failed: ${response.statusCode}', name: 'login');
         return "Incorrect Username";
       }
     } catch (e) {
+      log('💥 Login error: $e', name: 'login');
       return "Incorrect Username";
     }
   }
@@ -50,254 +76,221 @@ class ApiService {
     required String email,
     required String dob,
   }) async {
-    try {
-      final requestBody = {
-        'username': username,
-        'first_name': firstName,
-        'last_name': lastName,
-        'password': password,
-        'email': email,
-        'dob': dob,
-      };
+    final url = '$baseUrl/auth/register';
+    final requestBody = {
+      'username': username,
+      'first_name': firstName,
+      'last_name': lastName,
+      'password': password,
+      'email': email,
+      'dob': dob,
+    };
 
-      print('Registration request URL: $baseUrl/auth/register');
-      print('Registration request body: ${json.encode(requestBody)}');
+    try {
+      log('🚀 Starting registration process', name: 'register');
+      log('📤 URL: $url', name: 'register');
+      log('📤 Request body: $requestBody', name: 'register');
 
       final response = await http
           .post(
-            Uri.parse('$baseUrl/auth/register'),
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode(requestBody),
-          )
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestBody),
+      )
           .timeout(const Duration(seconds: 30));
 
-      print('Registration response status: ${response.statusCode}');
-      print('Registration response body: ${response.body}');
+      log('📥 Response status: ${response.statusCode}', name: 'register');
+      log('📥 Response body: ${response.body}', name: 'register');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        log('✅ Registration successful', name: 'register');
+        return {'success': true, 'data': data};
       } else {
-        throw Exception(
-          'Registration failed: ${response.statusCode} - ${response.body}',
-        );
+        final error = json.decode(response.body);
+        log('❌ Registration failed: ${response.statusCode}', name: 'register');
+        return {
+          'success': false,
+          'error': error['message'] ?? 'Registration failed'
+        };
       }
     } catch (e) {
-      print('Registration error: $e');
-      throw Exception('Registration error: $e');
+      log('💥 Registration error: $e', name: 'register');
+      return {'success': false, 'error': 'Network error occurred'};
     }
   }
 
-  Future<Map<String, dynamic>> startConversation(String query) async {
+  Future<Map<String, dynamic>> startConversation(String message) async {
+    final url = '$baseUrl/chat';
+    final requestBody = {'query': message};
+
     try {
+      log('🚀 Starting new conversation', name: 'start_conversation');
+      log('📤 URL: $url', name: 'start_conversation');
+      log('📤 Request body: $requestBody', name: 'start_conversation');
+
       final response = await http
           .post(
-            Uri.parse('$baseUrl/chat'),
-            headers: headers,
-            body: json.encode({'query': query}),
-          )
-          .timeout(const Duration(seconds: 30));
+        Uri.parse(url),
+        headers: await headers,
+        body: json.encode(requestBody),
+      )
+          .timeout(const Duration(seconds: 60));
+
+      log('📥 Response status: ${response.statusCode}', name: 'start_conversation');
+      log('📥 Response body: ${response.body}', name: 'start_conversation');
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        log('✅ Conversation started successfully', name: 'start_conversation');
+        return data;
       } else {
-        throw Exception(
-          'Failed to start conversation: ${response.statusCode} - ${response.body}',
-        );
+        log('❌ Failed to start conversation: ${response.statusCode}', name: 'start_conversation');
+        throw Exception('Failed to start conversation: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Start conversation error: $e');
+      log('💥 Conversation start error: $e', name: 'start_conversation');
+      throw Exception('Failed to start conversation: $e');
     }
   }
 
   Future<Map<String, dynamic>> continueConversation(
-    String threadId,
-    String query,
-  ) async {
+      String threadId,
+      String message,
+      ) async {
+    final url = '$baseUrl/chat';
+    final requestBody = {
+      'thread_id': threadId,
+      'query': message,
+    };
+
     try {
+      log('🔄 Continuing conversation: $threadId', name: 'continue_conversation');
+      log('📤 URL: $url', name: 'continue_conversation');
+      log('📤 Request body: $requestBody', name: 'continue_conversation');
+
       final response = await http
-          .patch(
-            Uri.parse('$baseUrl/chat'),
-            headers: headers,
-            body: json.encode({'thread_id': threadId, 'query': query}),
-          )
-          .timeout(const Duration(seconds: 30));
+          .post(
+        Uri.parse(url),
+        headers: await headers,
+        body: json.encode(requestBody),
+      )
+          .timeout(const Duration(seconds: 60));
+
+      log('📥 Response status: ${response.statusCode}', name: 'continue_conversation');
+      log('📥 Response body: ${response.body}', name: 'continue_conversation');
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        log('✅ Conversation continued successfully', name: 'continue_conversation');
+        return data;
       } else {
-        throw Exception(
-          'Failed to continue conversation: ${response.statusCode} - ${response.body}',
-        );
+        log('❌ Failed to continue conversation: ${response.statusCode}', name: 'continue_conversation');
+        throw Exception('Failed to continue conversation: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Continue conversation error: $e');
+      log('💥 Conversation continue error: $e', name: 'continue_conversation');
+      throw Exception('Failed to continue conversation: $e');
     }
   }
 
-  // Get all conversation history from backend - UPDATED
   Future<List<Map<String, dynamic>>> getConversationHistory() async {
+    final url = '$baseUrl/get-all-user-conversations';
+
     try {
-      print(
-        'Fetching conversation history from: $baseUrl/get-all-user-conversations',
-      );
-      print('Using headers: $headers');
+      log('📋 Fetching conversation history', name: 'get_history');
+      log('📤 URL: $url', name: 'get_history');
 
       final response = await http
           .get(
-            Uri.parse('$baseUrl/get-all-user-conversations'),
-            headers: headers,
-          )
+        Uri.parse(url),
+        headers: await headers,
+      )
           .timeout(const Duration(seconds: 30));
 
-      print('Conversation history response status: ${response.statusCode}');
-      print('Conversation history response body: ${response.body}');
+      log('📥 Response status: ${response.statusCode}', name: 'get_history');
+      log('📥 Response body: ${response.body}', name: 'get_history');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
-        // Handle different response formats from your backend
-        List<Map<String, dynamic>> conversations = [];
-
-        if (data is List) {
-          conversations = List<Map<String, dynamic>>.from(data);
-        } else if (data is Map) {
-          // Try different possible keys that your backend might use
-          if (data.containsKey('conversations')) {
-            conversations = List<Map<String, dynamic>>.from(
-              data['conversations'],
-            );
-          } else if (data.containsKey('data')) {
-            var dataValue = data['data'];
-            if (dataValue is List) {
-              conversations = List<Map<String, dynamic>>.from(dataValue);
-            } else if (dataValue is Map) {
-              conversations = [Map<String, dynamic>.from(dataValue)];
-            }
-          } else if (data.containsKey('history')) {
-            conversations = List<Map<String, dynamic>>.from(data['history']);
-          } else if (data.containsKey('chats')) {
-            conversations = List<Map<String, dynamic>>.from(data['chats']);
-          } else {
-            // If no recognized key, assume the whole response is the conversation data
-            conversations = [Map<String, dynamic>.from(data)];
-          }
-        }
-
-        print('Parsed ${conversations.length} conversations from backend');
-        return conversations;
-      } else if (response.statusCode == 401) {
-        // Handle unauthorized - token might be expired
-        throw Exception('Authentication failed. Please log in again.');
-      } else if (response.statusCode == 404) {
-        // No conversations found - return empty list
-        print('No conversations found (404)');
-        return [];
+        log('✅ History fetched successfully', name: 'get_history');
+        return List<Map<String, dynamic>>.from(data);
       } else {
-        throw Exception(
-          'Failed to get conversation history: ${response.statusCode} - ${response.body}',
-        );
+        log('❌ Failed to fetch history: ${response.statusCode}', name: 'get_history');
+        throw Exception('Failed to fetch conversation history');
       }
     } catch (e) {
-      print('Get conversation history error: $e');
-      if (e.toString().contains('TimeoutException') ||
-          e.toString().contains('SocketException')) {
-        throw Exception('Network error: Please check your internet connection');
-      }
-      throw Exception('Failed to load conversation history: $e');
+      log('💥 History fetch error: $e', name: 'get_history');
+      throw Exception('Failed to fetch conversation history: $e');
     }
   }
 
-  // Get specific conversation messages from backend - UPDATED
-  Future<List<Map<String, dynamic>>> getConversationMessages(
-    String threadId,
-  ) async {
+  Future<List<Map<String, dynamic>>> getConversationMessages(String threadId) async {
+    final url = '$baseUrl/get-user-conversation?thread_id=$threadId';
+
     try {
-      print('Fetching messages for thread: $threadId');
+      log('💬 Fetching messages for thread: $threadId', name: 'get_messages');
+      log('📤 URL: $url', name: 'get_messages');
 
       final response = await http
           .get(
-            Uri.parse('$baseUrl/get-user-conversation?thread_id=$threadId'),
-            headers: headers,
-          )
+        Uri.parse(url),
+        headers: await headers,
+      )
           .timeout(const Duration(seconds: 30));
 
-      print('Conversation messages response status: ${response.statusCode}');
-      print('Conversation messages response body: ${response.body}');
+      log('📥 Response status: ${response.statusCode}', name: 'get_messages');
+      log('📥 Response body: ${response.body}', name: 'get_messages');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        List<Map<String, dynamic>> messages = [];
-
-        if (data is List) {
-          messages = List<Map<String, dynamic>>.from(data);
-        } else if (data is Map) {
-          if (data.containsKey('messages')) {
-            messages = List<Map<String, dynamic>>.from(data['messages']);
-          } else if (data.containsKey('data')) {
-            var dataValue = data['data'];
-            if (dataValue is List) {
-              messages = List<Map<String, dynamic>>.from(dataValue);
-            }
-          } else if (data.containsKey('history')) {
-            messages = List<Map<String, dynamic>>.from(data['history']);
-          } else if (data.containsKey('conversation')) {
-            messages = List<Map<String, dynamic>>.from(data['conversation']);
+        if (data is Map<String, dynamic> && data.containsKey('messages')) {
+          final messages = data['messages'];
+          if (messages is List) {
+            log('✅ Messages fetched successfully', name: 'get_messages');
+            return List<Map<String, dynamic>>.from(messages);
           }
         }
 
-        print('Parsed ${messages.length} messages from backend');
-        return messages;
-      } else if (response.statusCode == 401) {
-        throw Exception('Authentication failed. Please log in again.');
-      } else if (response.statusCode == 404) {
-        print('No messages found for thread (404)');
+        log('⚠️ No messages found in response', name: 'get_messages');
         return [];
       } else {
-        throw Exception(
-          'Failed to get conversation messages: ${response.statusCode} - ${response.body}',
-        );
+        log('❌ Failed to fetch messages: ${response.statusCode}', name: 'get_messages');
+        throw Exception('Failed to fetch messages');
       }
     } catch (e) {
-      print('Get conversation messages error: $e');
-      if (e.toString().contains('TimeoutException') ||
-          e.toString().contains('SocketException')) {
-        throw Exception('Network error: Please check your internet connection');
-      }
-      throw Exception('Failed to load conversation messages: $e');
+      log('💥 Messages fetch error: $e', name: 'get_messages');
+      throw Exception('Failed to fetch messages: $e');
     }
   }
 
   Future<Map<String, dynamic>> getUserProfile() async {
+    final url = '$baseUrl/users/profile';
+
     try {
+      log('👤 Fetching user profile', name: 'get_profile');
+      log('📤 URL: $url', name: 'get_profile');
+
       final response = await http
-          .get(Uri.parse('$baseUrl/users/profile'), headers: headers)
+          .get(Uri.parse(url), headers: await headers)
           .timeout(const Duration(seconds: 30));
 
+      log('📥 Response status: ${response.statusCode}', name: 'get_profile');
+      log('📥 Response body: ${response.body}', name: 'get_profile');
+
       if (response.statusCode == 200) {
+        log('✅ Profile fetched successfully', name: 'get_profile');
         return json.decode(response.body);
       } else {
+        log('❌ Failed to fetch profile: ${response.statusCode}', name: 'get_profile');
         throw Exception(
           'Failed to get user profile: ${response.statusCode} - ${response.body}',
         );
       }
     } catch (e) {
+      log('💥 Profile fetch error: $e', name: 'get_profile');
       throw Exception('Get profile error: $e');
-    }
-  }
-
-  Future<bool> testConnection() async {
-    try {
-      print('Testing connection to: $baseUrl');
-      final response = await http
-          .get(Uri.parse(baseUrl))
-          .timeout(const Duration(seconds: 10));
-
-      print('Connection test - Status: ${response.statusCode}');
-      return response.statusCode < 500;
-    } catch (e) {
-      print('Connection test failed: $e');
-      return false;
     }
   }
 }

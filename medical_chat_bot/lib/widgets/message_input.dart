@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:medical_chat_bot/model/chat_model.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/auth_provider.dart';
 
 class MessageBubble extends StatefulWidget {
   final Message message;
@@ -87,17 +90,13 @@ class _MessageBubbleState extends State<MessageBubble>
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (!widget.message.isUser) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.green.shade100,
-                child: Text(
-                  'I',
-                  style: TextStyle(
-                    color: Colors.green.shade700,
-                    fontWeight: FontWeight.bold,
+              Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent.withAlpha(51),
+                    shape: BoxShape.circle,
                   ),
-                ),
-              ),
+                  child: Image.asset('assets/logo.png', height: 30, width: 30)),
               SizedBox(width: 8),
             ],
             Flexible(
@@ -230,17 +229,32 @@ class _MessageBubbleState extends State<MessageBubble>
             ),
             if (widget.message.isUser) ...[
               SizedBox(width: 8),
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.blue.shade100,
-                child: Text(
-                  'U',
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.bold,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF4BB543), Color(0xFF388E3C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Center(
+                  child: Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                    return Text(
+                      _getProfileInitials(authProvider),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    );
+                      }),
                   ),
                 ),
-              ),
             ],
           ],
         ),
@@ -262,4 +276,23 @@ class _MessageBubbleState extends State<MessageBubble>
       return '${timestamp.day}/${timestamp.month}';
     }
   }
+
+  String _getProfileInitials(AuthProvider authProvider) {
+    if (authProvider.user != null) {
+      final firstName = authProvider.user!.firstName ?? '';
+      final lastName = authProvider.user!.lastName ?? '';
+
+      if (firstName.isEmpty && lastName.isEmpty) {
+        final username = authProvider.user!.username ?? '';
+        return username.isNotEmpty ? username[0].toUpperCase() : 'U';
+      }
+
+      final firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
+      final lastInitial = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
+
+      return '$firstInitial$lastInitial';
+    }
+    return 'U';
+  }
+
 }
