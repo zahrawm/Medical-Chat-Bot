@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'IRIS Chat',
+        title: 'IRIS Chat', 
         theme: ThemeData(visualDensity: VisualDensity.adaptivePlatformDensity),
         home: AuthWrapper(),
       ),

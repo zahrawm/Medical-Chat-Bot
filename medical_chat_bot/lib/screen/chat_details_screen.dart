@@ -13,7 +13,8 @@ class ChatDetailsScreen extends StatefulWidget {
   State<ChatDetailsScreen> createState() => _ChatDetailsScreenState();
 }
 
-class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProviderStateMixin  {
+class _ChatDetailsScreenState extends State<ChatDetailsScreen>
+    with TickerProviderStateMixin {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   bool _isInitialized = false;
@@ -82,6 +83,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
       }
     });
   }
+
   @override
   void dispose() {
     _thinkingAnimationController.dispose();
@@ -109,9 +111,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
@@ -128,11 +128,13 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
               ConversationHistory? conversation;
 
               if (widget.conversationID != null) {
-                conversation = chatProvider.getConversationById(widget.conversationID!);
+                conversation = chatProvider.getConversationById(
+                  widget.conversationID!,
+                );
 
                 if (conversation == null) {
                   conversation = chatProvider.conversationHistory.firstWhere(
-                        (conv) => conv.threadId == widget.conversationID,
+                    (conv) => conv.threadId == widget.conversationID,
                     orElse: () => ConversationHistory(
                       id: '',
                       title: '',
@@ -144,15 +146,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
                 }
               }
 
-              String title = widget.tile ??  '';
+              String title = widget.tile ?? '';
 
               return Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -201,7 +200,11 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[300]),
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 64,
+                  color: Colors.grey[300],
+                ),
                 const SizedBox(height: 16),
                 Text(
                   widget.conversationID != null
@@ -233,16 +236,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
                 padding: const EdgeInsets.all(16),
                 itemCount: messages.length + (isLoading ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == messages.length && (isLoading )) {
+                  if (index == messages.length && (isLoading)) {
                     return _buildThinkingIndicator();
                   }
 
                   final message = messages[index];
-                  return MessageBubble(
-                    message: message,
-                    shouldAnimate:
-                    !message.isUser && index == chatProvider.messages.length - 1,
-                  );
+                  return MessageBubble(message: message, shouldAnimate: false);
                 },
               ),
             ),
@@ -311,10 +310,10 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
                         children: List.generate(3, (index) {
                           final delay = index * 0.5;
                           final animationValue =
-                          (_thinkingAnimation.value - delay).clamp(
-                            0.0,
-                            1.0,
-                          );
+                              (_thinkingAnimation.value - delay).clamp(
+                                0.0,
+                                1.0,
+                              );
                           final opacity = (animationValue * 2).clamp(0.0, 1.0);
 
                           return Container(
@@ -406,18 +405,18 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> with TickerProvid
                           child: Center(
                             child: chatProvider.isLoading
                                 ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
                                 : Icon(
-                              Icons.send,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                           ),
                         ),
                       ),

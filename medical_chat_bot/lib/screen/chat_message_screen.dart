@@ -178,12 +178,17 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.greenAccent.withAlpha(51),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset('assets/logo.png', height: 40, width: 40)),
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent.withAlpha(51),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        height: 40,
+                        width: 40,
+                      ),
+                    ),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -310,7 +315,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   );
                 }
 
-                final groupedConversations = chatProvider.groupConversationsByTime();
+                final groupedConversations = chatProvider
+                    .groupConversationsByTime();
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -320,16 +326,23 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   child: ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     physics: AlwaysScrollableScrollPhysics(),
-                    itemCount: chatProvider.getGroupedConversationCount(groupedConversations),
+                    itemCount: chatProvider.getGroupedConversationCount(
+                      groupedConversations,
+                    ),
                     itemBuilder: (context, index) {
-                      final (section, itemIndex) = chatProvider.getItemPosition(index, groupedConversations);
+                      final (section, itemIndex) = chatProvider.getItemPosition(
+                        index,
+                        groupedConversations,
+                      );
 
                       if (itemIndex == -1) {
                         return _buildSectionHeader(section);
                       }
 
-                      final conversation = groupedConversations[section]![itemIndex];
-                      final isCurrentConversation = conversation.id == chatProvider.currentConversationId;
+                      final conversation =
+                          groupedConversations[section]![itemIndex];
+                      final isCurrentConversation =
+                          conversation.id == chatProvider.currentConversationId;
 
                       return Container(
                         child: ListTile(
@@ -353,26 +366,27 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           onTap: chatProvider.isLoadingConversation
                               ? null
                               : () async {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatDetailsScreen(
-                                  conversationID: conversation.threadId,
-                                  tile: conversation.title,
-                                ),
-                              ),
-                            );
-                          },
-                          trailing: chatProvider.isLoadingConversation &&
-                              isCurrentConversation
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatDetailsScreen(
+                                        conversationID: conversation.threadId,
+                                        tile: conversation.title,
+                                      ),
+                                    ),
+                                  );
+                                },
+                          trailing:
+                              chatProvider.isLoadingConversation &&
+                                  isCurrentConversation
                               ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.green.shade600,
-                            ),
-                          )
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.green.shade600,
+                                  ),
+                                )
                               : null,
                         ),
                       );
@@ -404,12 +418,18 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               height: 50,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Color(0xFF4BB543), Color(0xFF388E3C)],
+                                  colors: [
+                                    Color(0xFF4BB543),
+                                    Color(0xFF388E3C),
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(15),
-                                border: Border.all(color: Colors.white, width: 1.5),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
                               ),
                               child: Center(
                                 child: Text(
@@ -425,28 +445,31 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => ProfileScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) => ProfileScreen(),
+                                ),
                               );
                             },
                             tooltip: 'Profile',
                             padding: EdgeInsets.all(4),
-                            constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                            constraints: BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                                Text(
-                                  authProvider.user?.firstName ?? '',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
                               Text(
-                                  'User'
-                              )
-                              ]
+                                authProvider.user?.firstName ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text('User'),
+                            ],
                           ),
                         ],
                       ),
@@ -460,8 +483,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ProfileScreen()),
-                        );                        },
+                          MaterialPageRoute(
+                            builder: (context) => ProfileScreen(),
+                          ),
+                        );
+                      },
                       tooltip: 'Profile',
                       padding: EdgeInsets.all(4),
                       constraints: BoxConstraints(minWidth: 40, minHeight: 40),
@@ -475,7 +501,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         },
                         tooltip: 'Logout',
                         padding: EdgeInsets.all(4),
-                        constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                        constraints: BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
                       ),
                     ),
                   ],
@@ -535,7 +564,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           _buildFeatures(),
 
           SizedBox(height: 10),
-           _buildQuickQuestions(),
+          _buildQuickQuestions(),
         ],
       ),
     );
@@ -566,7 +595,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        if (_showQuickQuestions)...[
+        if (_showQuickQuestions) ...[
           SizedBox(height: 8),
           Column(
             children: _quickQuestions.map((question) {
@@ -577,7 +606,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   child: Card(
                     child: Container(
                       width: double.infinity,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -618,7 +650,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               );
             }).toList(),
           ),
-        ]
+        ],
       ],
     );
   }
@@ -1039,7 +1071,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.logout, color: Colors.orange.shade600),
+            Icon(Icons.logout, color: Colors.green),
             SizedBox(width: 8),
             Text('Logout'),
           ],
@@ -1062,7 +1094,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               Provider.of<AuthProvider>(context, listen: false).logout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade600,
+              backgroundColor: Colors.green[400],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

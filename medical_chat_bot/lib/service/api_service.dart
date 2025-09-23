@@ -29,9 +29,7 @@ class ApiService {
 
   Future<Map<String, String>> get formHeaders async {
     final token = await _getAccessToken();
-    return {
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
+    return {if (token != null) 'Authorization': 'Bearer $token'};
   }
 
   Future login(String email, String password) async {
@@ -44,11 +42,7 @@ class ApiService {
       log('📤 Request body: $body', name: 'login');
 
       final response = await http
-          .post(
-        Uri.parse(url),
-        headers: await formHeaders,
-        body: body,
-      )
+          .post(Uri.parse(url), headers: await formHeaders, body: body)
           .timeout(const Duration(seconds: 30));
 
       log('📥 Response status: ${response.statusCode}', name: 'login');
@@ -93,10 +87,10 @@ class ApiService {
 
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(requestBody),
-      )
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(requestBody),
+          )
           .timeout(const Duration(seconds: 30));
 
       log('📥 Response status: ${response.statusCode}', name: 'register');
@@ -111,7 +105,7 @@ class ApiService {
         log('❌ Registration failed: ${response.statusCode}', name: 'register');
         return {
           'success': false,
-          'error': error['message'] ?? 'Registration failed'
+          'error': error['message'] ?? 'Registration failed',
         };
       }
     } catch (e) {
@@ -131,13 +125,16 @@ class ApiService {
 
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: await headers,
-        body: json.encode(requestBody),
-      )
+            Uri.parse(url),
+            headers: await headers,
+            body: json.encode(requestBody),
+          )
           .timeout(const Duration(seconds: 60));
 
-      log('📥 Response status: ${response.statusCode}', name: 'start_conversation');
+      log(
+        '📥 Response status: ${response.statusCode}',
+        name: 'start_conversation',
+      );
       log('📥 Response body: ${response.body}', name: 'start_conversation');
 
       if (response.statusCode == 200) {
@@ -145,7 +142,10 @@ class ApiService {
         log('✅ Conversation started successfully', name: 'start_conversation');
         return data;
       } else {
-        log('❌ Failed to start conversation: ${response.statusCode}', name: 'start_conversation');
+        log(
+          '❌ Failed to start conversation: ${response.statusCode}',
+          name: 'start_conversation',
+        );
         throw Exception('Failed to start conversation: ${response.statusCode}');
       }
     } catch (e) {
@@ -155,38 +155,49 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> continueConversation(
-      String threadId,
-      String message,
-      ) async {
+    String threadId,
+    String message,
+  ) async {
     final url = '$baseUrl/chat';
-    final requestBody = {
-      'thread_id': threadId,
-      'query': message,
-    };
+    final requestBody = {'thread_id': threadId, 'query': message};
 
     try {
-      log('🔄 Continuing conversation: $threadId', name: 'continue_conversation');
+      log(
+        '🔄 Continuing conversation: $threadId',
+        name: 'continue_conversation',
+      );
       log('📤 URL: $url', name: 'continue_conversation');
       log('📤 Request body: $requestBody', name: 'continue_conversation');
 
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: await headers,
-        body: json.encode(requestBody),
-      )
+            Uri.parse(url),
+            headers: await headers,
+            body: json.encode(requestBody),
+          )
           .timeout(const Duration(seconds: 60));
 
-      log('📥 Response status: ${response.statusCode}', name: 'continue_conversation');
+      log(
+        '📥 Response status: ${response.statusCode}',
+        name: 'continue_conversation',
+      );
       log('📥 Response body: ${response.body}', name: 'continue_conversation');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        log('✅ Conversation continued successfully', name: 'continue_conversation');
+        log(
+          '✅ Conversation continued successfully',
+          name: 'continue_conversation',
+        );
         return data;
       } else {
-        log('❌ Failed to continue conversation: ${response.statusCode}', name: 'continue_conversation');
-        throw Exception('Failed to continue conversation: ${response.statusCode}');
+        log(
+          '❌ Failed to continue conversation: ${response.statusCode}',
+          name: 'continue_conversation',
+        );
+        throw Exception(
+          'Failed to continue conversation: ${response.statusCode}',
+        );
       }
     } catch (e) {
       log('💥 Conversation continue error: $e', name: 'continue_conversation');
@@ -202,10 +213,7 @@ class ApiService {
       log('📤 URL: $url', name: 'get_history');
 
       final response = await http
-          .get(
-        Uri.parse(url),
-        headers: await headers,
-      )
+          .get(Uri.parse(url), headers: await headers)
           .timeout(const Duration(seconds: 30));
 
       log('📥 Response status: ${response.statusCode}', name: 'get_history');
@@ -216,7 +224,10 @@ class ApiService {
         log('✅ History fetched successfully', name: 'get_history');
         return List<Map<String, dynamic>>.from(data);
       } else {
-        log('❌ Failed to fetch history: ${response.statusCode}', name: 'get_history');
+        log(
+          '❌ Failed to fetch history: ${response.statusCode}',
+          name: 'get_history',
+        );
         throw Exception('Failed to fetch conversation history');
       }
     } catch (e) {
@@ -225,7 +236,9 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getConversationMessages(String threadId) async {
+  Future<List<Map<String, dynamic>>> getConversationMessages(
+    String threadId,
+  ) async {
     final url = '$baseUrl/get-user-conversation?thread_id=$threadId';
 
     try {
@@ -233,10 +246,7 @@ class ApiService {
       log('📤 URL: $url', name: 'get_messages');
 
       final response = await http
-          .get(
-        Uri.parse(url),
-        headers: await headers,
-      )
+          .get(Uri.parse(url), headers: await headers)
           .timeout(const Duration(seconds: 30));
 
       log('📥 Response status: ${response.statusCode}', name: 'get_messages');
@@ -256,7 +266,10 @@ class ApiService {
         log('⚠️ No messages found in response', name: 'get_messages');
         return [];
       } else {
-        log('❌ Failed to fetch messages: ${response.statusCode}', name: 'get_messages');
+        log(
+          '❌ Failed to fetch messages: ${response.statusCode}',
+          name: 'get_messages',
+        );
         throw Exception('Failed to fetch messages');
       }
     } catch (e) {
@@ -283,7 +296,10 @@ class ApiService {
         log('✅ Profile fetched successfully', name: 'get_profile');
         return json.decode(response.body);
       } else {
-        log('❌ Failed to fetch profile: ${response.statusCode}', name: 'get_profile');
+        log(
+          '❌ Failed to fetch profile: ${response.statusCode}',
+          name: 'get_profile',
+        );
         throw Exception(
           'Failed to get user profile: ${response.statusCode} - ${response.body}',
         );

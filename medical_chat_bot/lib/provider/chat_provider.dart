@@ -129,7 +129,7 @@ class ChatProvider with ChangeNotifier {
       bool loadSuccess = false;
 
       // Try to load from backend first (using threadId)
-      if ( conversation.threadId != null) {
+      if (conversation.threadId != null) {
         try {
           loadedMessages = await loadConversationFromBackend(
             conversation.threadId!, // Use threadId for backend API
@@ -175,7 +175,6 @@ class ChatProvider with ChangeNotifier {
 
       _setLoadingConversation(false);
       notifyListeners();
-
     } catch (e) {
       _setError('Failed to load conversation: ${e.toString()}');
       _setLoadingConversation(false);
@@ -183,9 +182,13 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  Future<List<Message>> loadConversationFromBackend(String conversationId) async {
+  Future<List<Message>> loadConversationFromBackend(
+    String conversationId,
+  ) async {
     try {
-      final backendMessages = await _apiService.getConversationMessages(conversationId);
+      final backendMessages = await _apiService.getConversationMessages(
+        conversationId,
+      );
 
       if (backendMessages.isNotEmpty) {
         List<Message> convertedMessages = [];
@@ -264,15 +267,16 @@ class ChatProvider with ChangeNotifier {
   }
 
   Future<List<Message>> _loadConversationFromLocal(
-      String conversationId,
-      ) async {
+    String conversationId,
+  ) async {
     try {
       if (conversationId.isEmpty) {
         return [];
       }
 
       final prefs = await SharedPreferences.getInstance();
-      final messagesJson = prefs.getStringList('messages_$conversationId') ?? [];
+      final messagesJson =
+          prefs.getStringList('messages_$conversationId') ?? [];
 
       if (messagesJson.isNotEmpty) {
         final loadedMessages = <Message>[];
@@ -334,12 +338,14 @@ class ChatProvider with ChangeNotifier {
       bool isUser = false;
 
       if (item.containsKey('is_user')) {
-        isUser = item['is_user'] == true ||
+        isUser =
+            item['is_user'] == true ||
             item['is_user'] == 1 ||
             item['is_user'] == '1' ||
             item['is_user'] == 'true';
       } else if (item.containsKey('from_user')) {
-        isUser = item['from_user'] == true ||
+        isUser =
+            item['from_user'] == true ||
             item['from_user'] == 1 ||
             item['from_user'] == '1' ||
             item['from_user'] == 'true';
@@ -391,7 +397,15 @@ class ChatProvider with ChangeNotifier {
     try {
       _setLoadingHistory(true);
 
-      if (_apiService.accessToken != null) {
+      // Wait for the access token to be loaded from SharedPreferences
+      await Future.delayed(Duration(milliseconds: 100));
+
+      // Try to get the token from SharedPreferences directly
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+
+      if (token != null) {
+        _apiService.setAccessToken(token);
         await _syncConversationHistoryFromBackend();
       } else {
         _conversationHistory.clear();
@@ -451,10 +465,11 @@ class ChatProvider with ChangeNotifier {
   }
 
   ConversationHistory? _convertBackendToConversationHistory(
-      Map<String, dynamic> item,
-      ) {
+    Map<String, dynamic> item,
+  ) {
     try {
-      String? id = item['id']?.toString() ??
+      String? id =
+          item['id']?.toString() ??
           item['conversation_id']?.toString() ??
           item['chat_id']?.toString();
 
@@ -462,7 +477,8 @@ class ChatProvider with ChangeNotifier {
         return null;
       }
 
-      String title = item['title']?.toString() ??
+      String title =
+          item['title']?.toString() ??
           item['name']?.toString() ??
           item['subject']?.toString() ??
           item['conversation_title']?.toString() ??
@@ -473,7 +489,8 @@ class ChatProvider with ChangeNotifier {
         title = 'Conversation ${id.substring(0, 8)}';
       }
 
-      String lastMessage = item['last_message']?.toString() ??
+      String lastMessage =
+          item['last_message']?.toString() ??
           item['lastMessage']?.toString() ??
           item['preview']?.toString() ??
           title;
@@ -504,7 +521,8 @@ class ChatProvider with ChangeNotifier {
         );
       }
 
-      String? threadId = item['thread_id']?.toString() ??
+      String? threadId =
+          item['thread_id']?.toString() ??
           item['threadId']?.toString() ??
           item['session_id']?.toString();
 
@@ -522,10 +540,10 @@ class ChatProvider with ChangeNotifier {
   }
 
   int _estimateMessageCountFromTokens(
-      dynamic totalTokens,
-      dynamic promptTokens,
-      dynamic completionTokens,
-      ) {
+    dynamic totalTokens,
+    dynamic promptTokens,
+    dynamic completionTokens,
+  ) {
     try {
       int total = _parseMessageCount(totalTokens ?? 0);
       int prompt = _parseMessageCount(promptTokens ?? 0);
@@ -587,9 +605,9 @@ class ChatProvider with ChangeNotifier {
   }
 
   Future<void> _saveMessagesToLocal(
-      String conversationId,
-      List<Message> messages,
-      ) async {
+    String conversationId,
+    List<Message> messages,
+  ) async {
     try {
       if (conversationId.isEmpty) {
         return;
@@ -667,7 +685,8 @@ class ChatProvider with ChangeNotifier {
         response = await _apiService.startConversation(message);
         _currentThreadId = response['thread_id'];
 
-        final newConversationId = DateTime.now().millisecondsSinceEpoch.toString();
+        final newConversationId = DateTime.now().millisecondsSinceEpoch
+            .toString();
         _currentConversationId = newConversationId;
 
         await _createNewConversation(message);
@@ -703,7 +722,6 @@ class ChatProvider with ChangeNotifier {
           _setTyping(false);
         }
       });
-
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -743,7 +761,7 @@ class ChatProvider with ChangeNotifier {
     if (_currentConversationId == null) return;
 
     final index = _conversationHistory.indexWhere(
-          (conv) => conv.id == _currentConversationId,
+      (conv) => conv.id == _currentConversationId,
     );
 
     if (index != -1) {
@@ -788,7 +806,6 @@ class ChatProvider with ChangeNotifier {
       _isLoadingConversation = false;
 
       notifyListeners();
-
     } catch (e) {
       _messages.clear();
       _currentThreadId = null;
@@ -845,9 +862,7 @@ class ChatProvider with ChangeNotifier {
 
       if (_apiService.accessToken != null && _currentThreadId != null) {
         try {
-          loadedMessages = await loadConversationFromBackend(
-            _currentThreadId!,
-          );
+          loadedMessages = await loadConversationFromBackend(_currentThreadId!);
           if (loadedMessages.isNotEmpty) {
             loadSuccess = true;
           }
@@ -890,7 +905,6 @@ class ChatProvider with ChangeNotifier {
       _setLoadingConversation(false);
 
       notifyListeners();
-
     } catch (e) {
       _setError('Failed to load conversation: ${e.toString()}');
       _setLoadingConversation(false);
@@ -943,7 +957,7 @@ class ChatProvider with ChangeNotifier {
     if (conversationId.isEmpty) return false;
 
     final conversation = _conversationHistory.firstWhere(
-          (conv) => conv.id == conversationId,
+      (conv) => conv.id == conversationId,
       orElse: () => ConversationHistory(
         id: '',
         title: '',
@@ -961,7 +975,7 @@ class ChatProvider with ChangeNotifier {
       if (conversationId.isEmpty) return null;
 
       return _conversationHistory.firstWhere(
-            (conv) => conv.id == conversationId,
+        (conv) => conv.id == conversationId,
       );
     } catch (e) {
       return null;
@@ -1000,8 +1014,8 @@ class ChatProvider with ChangeNotifier {
 
     if (lastUserMessage != null) {
       _messages.removeWhere(
-            (msg) =>
-        !msg.isUser && msg.timestamp.isAfter(lastUserMessage!.timestamp),
+        (msg) =>
+            !msg.isUser && msg.timestamp.isAfter(lastUserMessage!.timestamp),
       );
       await sendMessage(lastUserMessage.content);
     }
@@ -1048,8 +1062,8 @@ class ChatProvider with ChangeNotifier {
           .getKeys()
           .where(
             (key) =>
-        key.startsWith('messages_') || key == 'conversation_history',
-      )
+                key.startsWith('messages_') || key == 'conversation_history',
+          )
           .toList();
       for (String key in keys) {
         await prefs.remove(key);
@@ -1078,7 +1092,11 @@ class ChatProvider with ChangeNotifier {
 
     for (final conversation in _conversationHistory) {
       final conversationDate = conversation.timestamp;
-      final conversationDay = DateTime(conversationDate.year, conversationDate.month, conversationDate.day);
+      final conversationDay = DateTime(
+        conversationDate.year,
+        conversationDate.month,
+        conversationDate.day,
+      );
 
       if (conversationDay == today) {
         grouped['Today']!.add(conversation);
@@ -1098,7 +1116,9 @@ class ChatProvider with ChangeNotifier {
     return grouped;
   }
 
-  int getGroupedConversationCount(Map<String, List<ConversationHistory>> groupedConversations) {
+  int getGroupedConversationCount(
+    Map<String, List<ConversationHistory>> groupedConversations,
+  ) {
     int count = 0;
     groupedConversations.forEach((section, conversations) {
       count += conversations.length + 1;
@@ -1106,7 +1126,10 @@ class ChatProvider with ChangeNotifier {
     return count;
   }
 
-  (String, int) getItemPosition(int index, Map<String, List<ConversationHistory>> groupedConversations) {
+  (String, int) getItemPosition(
+    int index,
+    Map<String, List<ConversationHistory>> groupedConversations,
+  ) {
     int currentIndex = 0;
     final sections = groupedConversations.keys.toList();
 

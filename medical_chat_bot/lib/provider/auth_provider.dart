@@ -119,12 +119,22 @@ class AuthProvider with ChangeNotifier {
   }) async {
     try {
       _setLoading(true);
-      // Make API call to update profile
-      // Update local user data
-      // Return success status
+
+      // Since User properties are final, we need to create a new User object
+      if (_user != null) {
+        _user = User(
+          username: username,
+          firstName: firstName,
+          lastName: lastName,
+          email: _user!.email, // Keep existing email
+          dob: dob,
+        );
+        notifyListeners(); // This will trigger UI updates
+      }
+
       return true;
     } catch (e) {
-      // Handle error
+      print('Error updating profile: $e');
       return false;
     } finally {
       _setLoading(false);
