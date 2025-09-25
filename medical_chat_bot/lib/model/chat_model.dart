@@ -38,7 +38,6 @@ class Message {
     required this.timestamp,
   });
 
-  // Convert to JSON for storage
   Map<String, dynamic> toJson() {
     return {
       'content': content,
@@ -47,7 +46,6 @@ class Message {
     };
   }
 
-  // Create from JSON
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       content: json['content'],
@@ -56,7 +54,6 @@ class Message {
     );
   }
 
-  // Create a copy with updated properties
   Message copyWith({String? content, bool? isUser, DateTime? timestamp}) {
     return Message(
       content: content ?? this.content,
@@ -72,7 +69,6 @@ class Conversation {
 
   Conversation({required this.threadId, required this.messages});
 
-  // Convert to JSON for storage
   Map<String, dynamic> toJson() {
     return {
       'threadId': threadId,
@@ -80,7 +76,6 @@ class Conversation {
     };
   }
 
-  // Create from JSON
   factory Conversation.fromJson(Map<String, dynamic> json) {
     return Conversation(
       threadId: json['threadId'],

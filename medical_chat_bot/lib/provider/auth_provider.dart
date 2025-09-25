@@ -7,7 +7,7 @@ class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   User? _user;
   bool _isLoading = false;
-  bool _isInitialized = false; // Track if initial auth check is complete
+  bool _isInitialized = false; 
   String? _error;
 
   User? get user => _user;
@@ -34,13 +34,12 @@ class AuthProvider with ChangeNotifier {
 
       final response = await _apiService.login(email, password);
 
-      // Check if login failed
       if (response == "Incorrect Username") {
         _setError("Invalid email or password");
         return false;
       }
 
-      // Save token to SharedPreferences
+     
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', response['access_token']);
 
@@ -120,16 +119,15 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
 
-      // Since User properties are final, we need to create a new User object
       if (_user != null) {
         _user = User(
           username: username,
           firstName: firstName,
           lastName: lastName,
-          email: _user!.email, // Keep existing email
+          email: _user!.email, 
           dob: dob,
         );
-        notifyListeners(); // This will trigger UI updates
+        notifyListeners(); 
       }
 
       return true;
@@ -153,7 +151,7 @@ class AuthProvider with ChangeNotifier {
       }
     } catch (e) {
       print('Error loading saved token: $e');
-      // Clear any invalid token
+     
       await _clearInvalidToken();
     } finally {
       _isInitialized = true;
@@ -176,14 +174,14 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Method to refresh user data
+ 
   Future<void> refreshUser() async {
     if (_user != null) {
       await _getUserProfile();
     }
   }
 
-  // Clear error message
+
   void clearError() {
     _setError(null);
   }

@@ -126,7 +126,7 @@ class _CustomInputFieldState extends State<CustomInputField> {
   }
 
   Widget? _buildSuffixIcon(double screenWidth) {
-    // If obscureText is true, show toggle visibility icon
+   
     if (widget.obscureText) {
       return IconButton(
         icon: Icon(
@@ -142,7 +142,7 @@ class _CustomInputFieldState extends State<CustomInputField> {
       );
     }
 
-    // If custom suffix icon is provided
+  
     if (widget.suffixIcon != null) {
       return IconButton(
         icon: Icon(

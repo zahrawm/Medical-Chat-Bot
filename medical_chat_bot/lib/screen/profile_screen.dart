@@ -20,7 +20,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DateTime? _selectedDate;
   String? _selectedMonth;
 
-  // List of months for the dropdown
   final List<String> _months = [
     'January',
     'February',
@@ -53,12 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _lastNameController.text = authProvider.user?.lastName ?? '';
     _emailController.text = authProvider.user?.email ?? '';
 
-    // Parse existing DOB if available
+    
     final dob = authProvider.user?.dob ?? '';
     if (dob.isNotEmpty) {
       _parseDOB(dob);
     } else {
-      // Set default date
+    
       _selectedDate = DateTime(2002, 5, 5);
       _dobDayController.text = '05';
       _selectedMonth = 'May';
@@ -70,18 +69,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       DateTime parsedDate;
 
-      // Try different date formats
+     
       if (dob.contains('/')) {
         final parts = dob.split('/');
         if (parts.length == 3) {
-          // MM/DD/YYYY or DD/MM/YYYY
+      
           parsedDate = DateTime(
             int.parse(parts[2]),
             int.parse(parts[0]),
             int.parse(parts[1]),
           );
         } else if (parts.length == 2) {
-          // MM/YYYY
+         
           parsedDate = DateTime(int.parse(parts[1]), int.parse(parts[0]), 1);
         } else {
           return;
@@ -90,14 +89,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final parts = dob.split('-');
         if (parts.length >= 2) {
           if (parts[0].length == 4) {
-            // YYYY-MM-DD
+            
             parsedDate = DateTime(
               int.parse(parts[0]),
               int.parse(parts[1]),
               parts.length > 2 ? int.parse(parts[2]) : 1,
             );
           } else {
-            // MM-DD-YYYY or MM-YYYY
             parsedDate = DateTime(
               int.parse(parts[parts.length - 1]),
               int.parse(parts[0]),
@@ -114,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _selectedDate = parsedDate;
       _updateDateControllers();
     } catch (e) {
-      // If parsing fails, set default date
+    
       _selectedDate = DateTime(2002, 5, 5);
       _updateDateControllers();
     }
@@ -134,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final year = int.tryParse(_dobYearController.text);
 
       if (day != null && year != null && _selectedMonth != null) {
-        // Get month number from selected month name
+      
         final monthIndex = _months.indexOf(_selectedMonth!) + 1;
 
         setState(() {
@@ -142,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       }
     } catch (e) {
-      // Ignore parsing errors during typing
+     
     }
   }
 
@@ -201,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               SizedBox(height: 40),
 
-              // Header with close button
+           
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -212,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
 
-              // Profile Avatar and Info
+             
               Column(
                 children: [
                   Container(
@@ -252,12 +250,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               SizedBox(height: 32),
 
-              // Form
+             
               Form(
                 key: _formKey,
                 child: Column(
                   children: [
-                    // First Name and Last Name Row
+
                     Row(
                       children: [
                         Expanded(
@@ -279,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 16),
 
-                    // Phone Number
+                  
                     _buildFormField(
                       'Phone Number',
                       _phoneController,
@@ -288,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 16),
 
-                    // Date of Birth - Updated with dropdown for month
+                  
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -315,9 +313,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         Row(
                           children: [
-                            // Day field
+                           
                             SizedBox(width: 12),
-                            // Month dropdown
+                            
                             Expanded(
                               flex: 2,
                               child: DropdownButtonFormField<String>(
@@ -431,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
 
                             SizedBox(width: 12),
-                            // Year field
+                           
                             Expanded(
                               flex: 1,
                               child: TextFormField(
@@ -495,7 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 16),
 
-                    // Occupation
+             
                     _buildFormField(
                       'Occupation',
                       _occupationController,
@@ -504,7 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 32),
 
-                    // Account Info
+                   
                     Container(
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -524,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 32),
 
-                    // Action Buttons
+                 
                     Row(
                       children: [
                         Expanded(
@@ -656,7 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final lastName = _lastNameController.text.trim();
 
     if (firstName.isEmpty && lastName.isEmpty) {
-      return 'ZA'; // Default initials
+      return 'ZA';
     }
 
     final firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
@@ -675,7 +673,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      // You'll need to implement updateProfile method in your AuthProvider
+     
       final success = await authProvider.updateProfile(
         username: _usernameController.text.trim(),
         firstName: _firstNameController.text.trim(),

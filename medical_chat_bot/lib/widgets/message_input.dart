@@ -32,7 +32,7 @@ class _MessageBubbleState extends State<MessageBubble>
     _typewriterController = AnimationController(
       duration: Duration(
         milliseconds:
-            fullText.length * 3 + 100, // Changed from 8 to 3, and 200 to 100
+            fullText.length * 3 + 100,
       ),
       vsync: this,
     );
@@ -50,7 +50,7 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   void _animateText(String fullText) {
-    // Start with fade in
+  
     _fadeController.forward();
 
     _typewriterController.addListener(() {
@@ -62,7 +62,7 @@ class _MessageBubbleState extends State<MessageBubble>
       });
     });
 
-    // Start typing animation after a small delay
+    
     Future.delayed(Duration(milliseconds: 50), () {
       if (mounted) {
         _typewriterController.forward();
@@ -184,7 +184,7 @@ class _MessageBubbleState extends State<MessageBubble>
                                   ),
                                 ),
                         ),
-                        // Show typing cursor for bot messages during animation
+                   
                         if (!widget.message.isUser &&
                             widget.shouldAnimate &&
                             _typewriterController.isAnimating)
@@ -209,7 +209,7 @@ class _MessageBubbleState extends State<MessageBubble>
                           ),
                       ],
                     ),
-                    // Timestamp
+                   
                     if (_displayedText.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(top: 4),

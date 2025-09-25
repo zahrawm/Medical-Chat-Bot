@@ -1,4 +1,4 @@
-// chat_provider.dart
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -21,14 +21,12 @@ class ChatProvider with ChangeNotifier {
   bool _isLoadingHistory = false;
   bool _isSyncingWithBackend = false;
 
-  // Cache for messages to prevent blank screen
+  
   Map<String, List<Message>> _messageCache = {};
 
   ChatProvider(this._apiService) {
     _loadConversationHistory();
   }
-
-  // Getters
   List<Message> get messages => _messages;
   List<ConversationHistory> get conversationHistory => _conversationHistory;
   bool get isLoading => _isLoading;
@@ -40,7 +38,7 @@ class ChatProvider with ChangeNotifier {
   bool get isSyncingWithBackend => _isSyncingWithBackend;
   String? get accessToken => _apiService.accessToken;
 
-  // Private state setters
+
   void _setLoading(bool loading) {
     if (_disposed) return;
     _isLoading = loading;
@@ -120,7 +118,6 @@ class ChatProvider with ChangeNotifier {
 
       _currentConversationId = conversationId;
 
-      // Use threadId from the conversation for backend API calls
       if (conversation.threadId != null) {
         _currentThreadId = conversation.threadId;
       }
@@ -128,18 +125,17 @@ class ChatProvider with ChangeNotifier {
       List<Message> loadedMessages = [];
       bool loadSuccess = false;
 
-      // Try to load from backend first (using threadId)
       if (conversation.threadId != null) {
         try {
           loadedMessages = await loadConversationFromBackend(
-            conversation.threadId!, // Use threadId for backend API
+            conversation.threadId!, 
           );
           if (loadedMessages.isNotEmpty) {
             loadSuccess = true;
           }
         } catch (e) {
           print('Failed to load from backend: $e');
-          // Continue to try other sources
+        
         }
       }
 
@@ -151,7 +147,7 @@ class ChatProvider with ChangeNotifier {
           }
         } catch (e) {
           print('Failed to load from local: $e');
-          // Continue to try cache
+       
         }
       }
 
@@ -236,10 +232,10 @@ class ChatProvider with ChangeNotifier {
           try {
             await _saveMessagesToLocal(conversationId, convertedMessages);
           } catch (e) {
-            // Continue without saving
+            
           }
 
-          // UPDATE: Set the messages and notify listeners
+        
           if (!_disposed) {
             _messages = convertedMessages;
             _messageCache[conversationId] = List.from(convertedMessages);
@@ -250,14 +246,14 @@ class ChatProvider with ChangeNotifier {
         }
       }
 
-      // UPDATE: Clear messages if none found and notify listeners
+    
       if (!_disposed) {
         _messages = [];
         notifyListeners();
       }
       return [];
     } catch (e) {
-      // UPDATE: Clear messages on error and notify listeners
+     
       if (!_disposed) {
         _messages = [];
         notifyListeners();
@@ -286,7 +282,7 @@ class ChatProvider with ChangeNotifier {
             final message = Message.fromJson(messageData);
             loadedMessages.add(message);
           } catch (e) {
-            // Skip corrupted messages
+            
           }
         }
 
@@ -397,10 +393,10 @@ class ChatProvider with ChangeNotifier {
     try {
       _setLoadingHistory(true);
 
-      // Wait for the access token to be loaded from SharedPreferences
+      
       await Future.delayed(Duration(milliseconds: 100));
 
-      // Try to get the token from SharedPreferences directly
+    
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('access_token');
 
@@ -449,7 +445,7 @@ class ChatProvider with ChangeNotifier {
             }
           }
         } catch (e) {
-          // Skip invalid items
+         
         }
       }
 
@@ -598,7 +594,7 @@ class ChatProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      // Fall through to return current time
+     
     }
 
     return DateTime.now();
@@ -620,7 +616,7 @@ class ChatProvider with ChangeNotifier {
 
       await prefs.setStringList('messages_$conversationId', messagesJson);
     } catch (e) {
-      // Silently fail
+    
     }
   }
 
@@ -660,7 +656,7 @@ class ChatProvider with ChangeNotifier {
       await _saveMessagesToLocal(_currentConversationId!, _messages);
       _messageCache[_currentConversationId!] = List.from(_messages);
     } catch (e) {
-      // Silently fail
+      
     }
   }
 
@@ -867,7 +863,7 @@ class ChatProvider with ChangeNotifier {
             loadSuccess = true;
           }
         } catch (e) {
-          // Continue to try other sources
+        
         }
       }
 
@@ -878,7 +874,7 @@ class ChatProvider with ChangeNotifier {
             loadSuccess = true;
           }
         } catch (e) {
-          // Continue to try cache
+        
         }
       }
 

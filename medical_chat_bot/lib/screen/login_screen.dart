@@ -30,13 +30,13 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void initState() {
     super.initState();
-    // Add listeners to all text controllers to check form validity
+   
     _addTextControllerListeners();
   }
 
   @override
   void dispose() {
-    // Remove listeners to prevent memory leaks
+   
     _removeTextControllerListeners();
     super.dispose();
   }
@@ -87,7 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   bool _validateForm() {
-    // Basic validation - check if required fields are not empty
+   
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       return false;
     }
@@ -102,7 +102,7 @@ class _AuthScreenState extends State<AuthScreen> {
         return false;
       }
 
-      // Additional validation for date fields
+    
       final month = int.tryParse(_monthController.text);
       final day = int.tryParse(_dayController.text);
       final year = int.tryParse(_yearController.text);
@@ -112,7 +112,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (year == null || year < 1900 || year > DateTime.now().year) return false;
     }
 
-    // Email format validation
+  
     if (!_emailController.text.contains('@')) return false;
 
     return true;
@@ -167,7 +167,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _isFormValid = false;
                               });
                               _formKey.currentState?.reset();
-                              // Update listeners when mode changes
+                              
                               _removeTextControllerListeners();
                               _addTextControllerListeners();
                               _checkFormValidity();
@@ -419,7 +419,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       if (success) {
-        // Show success message with green background
+     
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

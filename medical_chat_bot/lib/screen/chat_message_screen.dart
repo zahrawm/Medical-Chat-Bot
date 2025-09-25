@@ -206,27 +206,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // In your ChatScreen's _buildHistoryDrawer method, replace the "New Chat" button section with this:
-
-          // New Chat Button Section
+         
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close drawer first
+                  Navigator.of(context).pop(); 
 
                   final chatProvider = Provider.of<ChatProvider>(
                     context,
                     listen: false,
                   );
 
-                  // FIXED: Clear current conversation properly without navigation
+                 
                   chatProvider.startNewConversation();
 
-                  // No navigation needed - we're already in ChatScreen
-                  // The UI will automatically update through the Consumer<ChatProvider>
+                  
                 },
                 icon: Icon(Icons.add, color: Colors.white, size: 18),
                 label: Text(
@@ -249,7 +246,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // Recent Chats Header
+         
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Align(
@@ -265,7 +262,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // Chat History List
+     
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
@@ -397,7 +394,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // Bottom section
+        
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -1152,7 +1149,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 }
 
-// Add this helper method to your _ChatScreenState class
 String _getProfileInitials(AuthProvider authProvider) {
   if (authProvider.user != null) {
     final firstName = authProvider.user!.firstName ?? '';

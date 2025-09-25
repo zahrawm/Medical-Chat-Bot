@@ -78,7 +78,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        // If user is authenticated, show main app
+ 
         if (authProvider.isAuthenticated) {
           return ChangeNotifierProvider(
             create: (_) => ChatProvider(authProvider.apiService),
@@ -86,7 +86,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        // Show login screen for non-authenticated users
+       
         return AuthScreen();
       },
     );
